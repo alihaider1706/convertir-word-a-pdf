@@ -71,7 +71,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const store = getSeoStore();
-  const gaId = store.globalSettings?.googleAnalyticsId || process.env.NEXT_PUBLIC_GA_ID;
+  const gaId = store.globalSettings?.googleAnalyticsId || process.env.NEXT_PUBLIC_GA_ID || 'G-ZBQ15GMFJ5';
 
   return (
     <html lang="es" className="scroll-smooth">
