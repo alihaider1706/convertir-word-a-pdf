@@ -32,6 +32,15 @@ export const metadata: Metadata = {
     description:
       'Convierte Word a PDF gratis online. Rápido, seguro y sin necesidad de instalar programas.',
   },
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
 };
 
 export const viewport: Viewport = {

@@ -40,41 +40,9 @@ export default function Header({
   const isCompressPdfActive = activeTool === 'comprimir-pdf';
   const isPdfToPptActive = activeTool === 'pdf-to-ppt';
 
-  const brandTitle = isWordActive
-    ? 'Convertir Word a PDF'
-    : isPdfActive
-    ? 'Convertir PDF a Word'
-    : isJpgActive
-    ? 'Convertir JPG a PDF'
-    : isPdfToJpgActive
-    ? 'Convertir PDF a JPG'
-    : isPdfToPptActive
-    ? 'Convertir PDF a PPT'
-    : 'Comprimir PDF';
-
-  const brandInitials = isWordActive
-    ? 'WP'
-    : isPdfActive
-    ? 'PW'
-    : isJpgActive
-    ? 'JP'
-    : isPdfToJpgActive
-    ? 'PJ'
-    : isPdfToPptActive
-    ? 'PP'
-    : 'CP';
-
-  const brandHref = isWordActive
-    ? '/'
-    : isPdfActive
-    ? '/pdf-a-word'
-    : isJpgActive
-    ? '/convertir-jpg-a-pdf/'
-    : isPdfToJpgActive
-    ? '/convertir-pdf-a-jpg/'
-    : isPdfToPptActive
-    ? '/convertir-pdf-a-ppt/'
-    : '/comprimir-pdf/';
+  // Fixed Brand Identity across all pages (Never changes per tool)
+  const brandTitle = 'Convertir Word a PDF';
+  const brandHref = '/';
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -91,14 +59,19 @@ export default function Header({
     <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-xs border-b border-slate-200/80">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14">
-          {/* Left: Brand Identity */}
+          {/* Left: Brand Identity (Unified Homepage Brand) */}
           <div className="flex items-center gap-3">
             <Link
               href={brandHref}
               className="flex items-center gap-2.5 text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
+              title="Convertir Word a PDF - Inicio"
             >
-              <div className="w-7 h-7 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-xs tracking-tight shadow-2xs">
-                {brandInitials}
+              <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                <img
+                  src="/icon.svg"
+                  alt="Logo Convertir Word a PDF"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="font-semibold text-slate-900 text-sm tracking-tight group-hover:text-blue-600 transition-colors">
                 {brandTitle}

@@ -23,12 +23,16 @@ export default function Footer({
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 pb-8 border-b border-slate-100 text-xs">
           {/* Col 1 & 2: Brand & Security Pledge */}
           <div className="md:col-span-2 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs">
-                DS
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0 shadow-2xs">
+                <img
+                  src="/icon.svg"
+                  alt="Convertir Word a PDF"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="font-bold text-slate-900 text-sm tracking-tight">
-                Plataforma Documental
+                Convertir Word a PDF
               </span>
             </div>
             <p className="text-slate-500 leading-relaxed max-w-sm">
