@@ -19,14 +19,16 @@ import {
 interface HeaderProps {
   onOpenTools: () => void;
   onOpenContact: () => void;
-  onScrollToConverter: () => void;
+  onScrollToConverter?: () => void;
   activeTool?: 'word-to-pdf' | 'pdf-to-word' | 'jpg-to-pdf' | 'pdf-to-jpg' | 'comprimir-pdf' | 'pdf-to-ppt';
 }
 
 export default function Header({
   onOpenTools,
   onOpenContact,
-  onScrollToConverter,
+  onScrollToConverter = () => {
+    if (typeof window !== 'undefined') window.location.href = '/#converter-tool';
+  },
   activeTool = 'word-to-pdf',
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

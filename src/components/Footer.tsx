@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Lock, ExternalLink } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, ExternalLink } from 'lucide-react';
+import { PhoneIcon } from '@/components/legal/LegalIcons';
 
 interface FooterProps {
   onOpenTools: () => void;
@@ -19,10 +20,10 @@ export default function Footer({
 }: FooterProps) {
   return (
     <footer className="bg-white border-t border-slate-200/90 mt-auto pt-10 pb-8 text-slate-600">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 pb-8 border-b border-slate-100 text-xs">
-          {/* Col 1 & 2: Brand & Security Pledge */}
-          <div className="md:col-span-2 space-y-3">
+          {/* Col 1: Brand & Contact Info */}
+          <div className="md:col-span-1 space-y-3">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0 shadow-2xs">
                 <img
@@ -35,22 +36,30 @@ export default function Footer({
                 Convertir Word a PDF
               </span>
             </div>
-            <p className="text-slate-500 leading-relaxed max-w-sm">
-              Suite profesional en línea para la conversión, compresión y protección de documentos PDF, Word e imágenes, preservando la fidelidad tipográfica y garantizando privacidad absoluta.
+            <p className="text-slate-500 leading-relaxed text-[11px]">
+              Suite profesional para la conversión, compresión y optimización de documentos con máxima privacidad.
             </p>
-            <div className="space-y-1 pt-1 text-[11px] text-slate-400">
-              <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>Procesamiento local y cifrado SSL de extremo a extremo</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <span>Sin retención de documentos ni almacenamiento permanente</span>
-              </div>
+
+            {/* Direct Contact Details */}
+            <div className="pt-2 border-t border-slate-100 space-y-1.5 text-[11px]">
+              <a
+                href="mailto:easygrade6@gmail.com"
+                className="flex items-center gap-1.5 text-slate-600 hover:text-blue-600 transition-colors font-medium break-all"
+              >
+                <Mail className="w-3.5 h-3.5 shrink-0 text-blue-600" />
+                <span>easygrade6@gmail.com</span>
+              </a>
+              <a
+                href="tel:+923187338727"
+                className="flex items-center gap-1.5 text-slate-600 hover:text-emerald-600 transition-colors font-medium"
+              >
+                <PhoneIcon className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
+                <span>+92 318 7338727</span>
+              </a>
             </div>
           </div>
 
-          {/* Col 3: Convertir a PDF */}
+          {/* Col 2: Convertir a PDF */}
           <div className="space-y-2.5">
             <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
               Convertir a PDF
@@ -90,7 +99,7 @@ export default function Footer({
             </ul>
           </div>
 
-          {/* Col 4: Convertir desde PDF */}
+          {/* Col 3: Convertir desde PDF */}
           <div className="space-y-2.5">
             <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
               Convertir desde PDF
@@ -126,22 +135,13 @@ export default function Footer({
                   PDF a Excel
                 </button>
               </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={onOpenTools}
-                  className="hover:text-blue-600 transition-colors text-left"
-                >
-                  Extraer texto (OCR)
-                </button>
-              </li>
             </ul>
           </div>
 
-          {/* Col 5: Utilidades y Soporte */}
+          {/* Col 4: Utilidades */}
           <div className="space-y-2.5">
             <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
-              Utilidades & Soporte
+              Utilidades
             </h4>
             <ul className="space-y-1.5">
               <li>
@@ -171,13 +171,61 @@ export default function Footer({
                 </button>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={onOpenContact}
-                  className="hover:text-blue-600 transition-colors text-left font-medium text-slate-800"
+                <Link
+                  href="/contacto"
+                  className="hover:text-blue-600 transition-colors block font-medium text-slate-800"
                 >
-                  Contacto & Soporte
-                </button>
+                  Página de Contacto
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 5: Legal & Confianza */}
+          <div className="space-y-2.5">
+            <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
+              Marco Legal & Privacidad
+            </h4>
+            <ul className="space-y-1.5">
+              <li>
+                <Link
+                  href="/politica-de-privacidad"
+                  className="hover:text-blue-600 transition-colors block"
+                >
+                  Política de Privacidad
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terminos-y-condiciones"
+                  className="hover:text-blue-600 transition-colors block"
+                >
+                  Términos y Condiciones
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/aviso-legal"
+                  className="hover:text-blue-600 transition-colors block"
+                >
+                  Aviso Legal
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/politica-de-cookies"
+                  className="hover:text-blue-600 transition-colors block"
+                >
+                  Política de Cookies
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contacto"
+                  className="hover:text-blue-600 transition-colors block"
+                >
+                  Atención al Cliente
+                </Link>
               </li>
             </ul>
           </div>
@@ -185,23 +233,27 @@ export default function Footer({
 
         {/* Bottom Row */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
-          <p>© 2026 Plataforma Documental. Todos los derechos reservados.</p>
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={onScrollToFaq}
-              className="hover:text-slate-700 transition-colors"
-            >
-              Preguntas Frecuentes
-            </button>
+          <p>© 2026 Convertir Word a PDF. Todos los derechos reservados.</p>
+          <div className="flex flex-wrap items-center gap-3 text-[11px]">
+            <Link href="/politica-de-privacidad" className="hover:text-slate-700 transition-colors">
+              Privacidad
+            </Link>
             <span>•</span>
-            <button
-              type="button"
-              onClick={onOpenContact}
-              className="hover:text-slate-700 transition-colors"
-            >
-              Privacidad y Seguridad
-            </button>
+            <Link href="/terminos-y-condiciones" className="hover:text-slate-700 transition-colors">
+              Términos
+            </Link>
+            <span>•</span>
+            <Link href="/aviso-legal" className="hover:text-slate-700 transition-colors">
+              Aviso Legal
+            </Link>
+            <span>•</span>
+            <Link href="/politica-de-cookies" className="hover:text-slate-700 transition-colors">
+              Cookies
+            </Link>
+            <span>•</span>
+            <Link href="/contacto" className="hover:text-slate-700 transition-colors">
+              Contacto (+92 318 7338727)
+            </Link>
           </div>
         </div>
       </div>

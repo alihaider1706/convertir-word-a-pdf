@@ -16,7 +16,13 @@
       "seoTitle": "Convertir Word a PDF Gratis Online | DOC a PDF",
       "metaDescription": "Convierte Word a PDF gratis online. Transforma archivos DOC y DOCX en documentos PDF fácilmente, preservando el formato original y sin instalar programas.",
       "focusKeyword": "convertir word a pdf",
-      "secondaryKeywords": ["word a pdf gratis", "doc a pdf", "docx a pdf", "convertidor word pdf", "transformar word en pdf online"],
+      "secondaryKeywords": [
+        "word a pdf gratis",
+        "doc a pdf",
+        "docx a pdf",
+        "convertidor word pdf",
+        "transformar word en pdf online"
+      ],
       "canonicalUrl": "https://convertirwordapdf.net/",
       "robots": {
         "index": true,
@@ -40,7 +46,10 @@
         "height": 512
       },
       "breadcrumbs": [
-        { "name": "Inicio", "item": "https://convertirwordapdf.net/" }
+        {
+          "name": "Inicio",
+          "item": "https://convertirwordapdf.net/"
+        }
       ],
       "schemaJsonLd": {
         "@context": "https://schema.org",
@@ -74,7 +83,7 @@
       ],
       "sitemap": {
         "includeInSitemap": true,
-        "priority": 1.0,
+        "priority": 1,
         "changeFrequency": "weekly"
       },
       "lastModified": "2026-11-08T00:00:00.000Z"
@@ -86,7 +95,12 @@
       "seoTitle": "Convertir PDF a PPT Gratis Online | PDF a PowerPoint",
       "metaDescription": "Convierte PDF a PPT gratis y online. Transforma tus documentos en presentaciones PowerPoint editables, conserva el formato y descarga tu archivo PPTX fácilmente.",
       "focusKeyword": "convertir pdf a ppt",
-      "secondaryKeywords": ["convertir pdf a powerpoint", "convertir de pdf a ppt gratis", "pdf a ppt editable", "como pasar pdf a powerpoint"],
+      "secondaryKeywords": [
+        "convertir pdf a powerpoint",
+        "convertir de pdf a ppt gratis",
+        "pdf a ppt editable",
+        "como pasar pdf a powerpoint"
+      ],
       "canonicalUrl": "https://convertirwordapdf.net/convertir-pdf-a-ppt/",
       "robots": {
         "index": true,
@@ -110,8 +124,14 @@
         "height": 512
       },
       "breadcrumbs": [
-        { "name": "Inicio", "item": "https://convertirwordapdf.net/" },
-        { "name": "PDF a PPT", "item": "https://convertirwordapdf.net/convertir-pdf-a-ppt/" }
+        {
+          "name": "Inicio",
+          "item": "https://convertirwordapdf.net/"
+        },
+        {
+          "name": "PDF a PPT",
+          "item": "https://convertirwordapdf.net/convertir-pdf-a-ppt/"
+        }
       ],
       "schemaJsonLd": {
         "@context": "https://schema.org",
@@ -157,7 +177,12 @@
       "seoTitle": "Convertir PDF a Word Gratis Online | DOCX Editable",
       "metaDescription": "Convierte tus documentos PDF a archivos Word DOCX editables gratis. Reconstruye texto, tablas y formato con máxima fidelidad visual sin instalar programas.",
       "focusKeyword": "convertir pdf a word",
-      "secondaryKeywords": ["pdf a word gratis", "pdf a docx", "convertidor pdf a word", "como pasar de pdf a word"],
+      "secondaryKeywords": [
+        "pdf a word gratis",
+        "pdf a docx",
+        "convertidor pdf a word",
+        "como pasar de pdf a word"
+      ],
       "canonicalUrl": "https://convertirwordapdf.net/pdf-a-word",
       "robots": {
         "index": true,
@@ -181,8 +206,14 @@
         "height": 512
       },
       "breadcrumbs": [
-        { "name": "Inicio", "item": "https://convertirwordapdf.net/" },
-        { "name": "PDF a Word", "item": "https://convertirwordapdf.net/pdf-a-word" }
+        {
+          "name": "Inicio",
+          "item": "https://convertirwordapdf.net/"
+        },
+        {
+          "name": "PDF a Word",
+          "item": "https://convertirwordapdf.net/pdf-a-word"
+        }
       ],
       "schemaJsonLd": {
         "@context": "https://schema.org",
@@ -220,7 +251,11 @@
       "seoTitle": "Convertir JPG a PDF Gratis Online | Unir Imágenes en PDF",
       "metaDescription": "Convierte imágenes JPG, PNG y WebP a documentos PDF fácilmente. Ajusta márgenes, orientación y calidad sin pérdida de nitidez.",
       "focusKeyword": "convertir jpg a pdf",
-      "secondaryKeywords": ["jpg a pdf gratis", "unir imagenes en pdf", "pasar fotos a pdf"],
+      "secondaryKeywords": [
+        "jpg a pdf gratis",
+        "unir imagenes en pdf",
+        "pasar fotos a pdf"
+      ],
       "canonicalUrl": "https://convertirwordapdf.net/convertir-jpg-a-pdf/",
       "robots": {
         "index": true,
@@ -244,8 +279,14 @@
         "height": 512
       },
       "breadcrumbs": [
-        { "name": "Inicio", "item": "https://convertirwordapdf.net/" },
-        { "name": "JPG a PDF", "item": "https://convertirwordapdf.net/convertir-jpg-a-pdf/" }
+        {
+          "name": "Inicio",
+          "item": "https://convertirwordapdf.net/"
+        },
+        {
+          "name": "JPG a PDF",
+          "item": "https://convertirwordapdf.net/convertir-jpg-a-pdf/"
+        }
       ],
       "schemaJsonLd": {
         "@context": "https://schema.org",
@@ -278,7 +319,11 @@
       "seoTitle": "Convertir PDF a JPG Gratis Online | Extraer Imágenes de PDF",
       "metaDescription": "Convierte páginas de PDF a imágenes JPG en alta resolución (72 a 300 DPI). Extrae diapositivas y fotos con nitidez absoluta y descarga en ZIP.",
       "focusKeyword": "convertir pdf a jpg",
-      "secondaryKeywords": ["pdf a jpg gratis", "convertir pdf a imagenes", "extraer fotos de pdf"],
+      "secondaryKeywords": [
+        "pdf a jpg gratis",
+        "convertir pdf a imagenes",
+        "extraer fotos de pdf"
+      ],
       "canonicalUrl": "https://convertirwordapdf.net/convertir-pdf-a-jpg/",
       "robots": {
         "index": true,
@@ -302,8 +347,14 @@
         "height": 512
       },
       "breadcrumbs": [
-        { "name": "Inicio", "item": "https://convertirwordapdf.net/" },
-        { "name": "PDF a JPG", "item": "https://convertirwordapdf.net/convertir-pdf-a-jpg/" }
+        {
+          "name": "Inicio",
+          "item": "https://convertirwordapdf.net/"
+        },
+        {
+          "name": "PDF a JPG",
+          "item": "https://convertirwordapdf.net/convertir-pdf-a-jpg/"
+        }
       ],
       "schemaJsonLd": {
         "@context": "https://schema.org",
@@ -336,7 +387,11 @@
       "seoTitle": "Comprimir PDF Gratis Online | Reducir Tamaño de Archivo PDF",
       "metaDescription": "Reduce el tamaño de tus archivos PDF al máximo sin perder calidad visual. Optimiza documentos para correos, portales de empleo y trámites oficiales en segundos.",
       "focusKeyword": "comprimir pdf",
-      "secondaryKeywords": ["reducir tamaño pdf", "comprimir pdf gratis", "bajar peso pdf online"],
+      "secondaryKeywords": [
+        "reducir tamaño pdf",
+        "comprimir pdf gratis",
+        "bajar peso pdf online"
+      ],
       "canonicalUrl": "https://convertirwordapdf.net/comprimir-pdf/",
       "robots": {
         "index": true,
@@ -360,8 +415,14 @@
         "height": 512
       },
       "breadcrumbs": [
-        { "name": "Inicio", "item": "https://convertirwordapdf.net/" },
-        { "name": "Comprimir PDF", "item": "https://convertirwordapdf.net/comprimir-pdf/" }
+        {
+          "name": "Inicio",
+          "item": "https://convertirwordapdf.net/"
+        },
+        {
+          "name": "Comprimir PDF",
+          "item": "https://convertirwordapdf.net/comprimir-pdf/"
+        }
       ],
       "schemaJsonLd": {
         "@context": "https://schema.org",
@@ -386,6 +447,308 @@
         "changeFrequency": "weekly"
       },
       "lastModified": "2026-11-08T00:00:00.000Z"
+    },
+    "/politica-de-privacidad": {
+      "id": "politica-de-privacidad",
+      "slug": "/politica-de-privacidad",
+      "name": "Política de Privacidad",
+      "seoTitle": "Política de Privacidad | Convertir Word a PDF",
+      "metaDescription": "Conoce nuestra política de privacidad, tratamiento confidencial de datos y compromiso de eliminación automática de documentos en Convertir Word a PDF.",
+      "focusKeyword": "politica de privacidad",
+      "secondaryKeywords": [
+        "privacidad de datos",
+        "eliminacion automatica",
+        "rgpd"
+      ],
+      "canonicalUrl": "https://convertirwordapdf.net/politica-de-privacidad",
+      "robots": {
+        "index": true,
+        "follow": true,
+        "noarchive": false,
+        "nosnippet": false,
+        "maxSnippet": -1,
+        "maxImagePreview": "large"
+      },
+      "openGraph": {
+        "title": "Política de Privacidad | Convertir Word a PDF",
+        "description": "Tratamiento confidencial de datos y eliminación automática de documentos.",
+        "image": "https://convertirwordapdf.net/icon-512.png",
+        "type": "website"
+      },
+      "featureImage": {
+        "url": "/icon-512.png",
+        "alt": "Política de Privacidad Convertir Word a PDF",
+        "title": "Política de Privacidad",
+        "width": 512,
+        "height": 512
+      },
+      "breadcrumbs": [
+        {
+          "name": "Inicio",
+          "item": "https://convertirwordapdf.net/"
+        },
+        {
+          "name": "Política de Privacidad",
+          "item": "https://convertirwordapdf.net/politica-de-privacidad"
+        }
+      ],
+      "schemaJsonLd": {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Política de Privacidad"
+      },
+      "content": {
+        "h1": "Política de Privacidad",
+        "subtitle": "Tu privacidad y la estricta confidencialidad de tus documentos son el pilar fundamental de nuestra plataforma."
+      },
+      "faqs": [],
+      "sitemap": {
+        "includeInSitemap": true,
+        "priority": 0.5,
+        "changeFrequency": "monthly"
+      },
+      "lastModified": "2026-11-07T22:09:05.146Z"
+    },
+    "/terminos-y-condiciones": {
+      "id": "terminos-y-condiciones",
+      "slug": "/terminos-y-condiciones",
+      "name": "Términos y Condiciones",
+      "seoTitle": "Términos y Condiciones de Uso | Convertir Word a PDF",
+      "metaDescription": "Términos y condiciones legales de uso de las herramientas de conversión y optimización de documentos en Convertir Word a PDF.",
+      "focusKeyword": "terminos y condiciones",
+      "secondaryKeywords": [
+        "condiciones de uso",
+        "terminos legales"
+      ],
+      "canonicalUrl": "https://convertirwordapdf.net/terminos-y-condiciones",
+      "robots": {
+        "index": true,
+        "follow": true,
+        "noarchive": false,
+        "nosnippet": false,
+        "maxSnippet": -1,
+        "maxImagePreview": "large"
+      },
+      "openGraph": {
+        "title": "Términos y Condiciones | Convertir Word a PDF",
+        "description": "Condiciones generales de uso de la plataforma.",
+        "image": "https://convertirwordapdf.net/icon-512.png",
+        "type": "website"
+      },
+      "featureImage": {
+        "url": "/icon-512.png",
+        "alt": "Términos y Condiciones Convertir Word a PDF",
+        "title": "Términos y Condiciones",
+        "width": 512,
+        "height": 512
+      },
+      "breadcrumbs": [
+        {
+          "name": "Inicio",
+          "item": "https://convertirwordapdf.net/"
+        },
+        {
+          "name": "Términos y Condiciones",
+          "item": "https://convertirwordapdf.net/terminos-y-condiciones"
+        }
+      ],
+      "schemaJsonLd": {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Términos y Condiciones"
+      },
+      "content": {
+        "h1": "Términos y Condiciones",
+        "subtitle": "Condiciones generales que regulan el acceso y uso de las herramientas."
+      },
+      "faqs": [],
+      "sitemap": {
+        "includeInSitemap": true,
+        "priority": 0.5,
+        "changeFrequency": "monthly"
+      },
+      "lastModified": "2026-11-07T22:09:05.148Z"
+    },
+    "/aviso-legal": {
+      "id": "aviso-legal",
+      "slug": "/aviso-legal",
+      "name": "Aviso Legal",
+      "seoTitle": "Aviso Legal | Convertir Word a PDF",
+      "metaDescription": "Información legal identificativa del titular de la plataforma Convertir Word a PDF y condiciones generales de acceso.",
+      "focusKeyword": "aviso legal",
+      "secondaryKeywords": [
+        "datos identificativos",
+        "titularidad"
+      ],
+      "canonicalUrl": "https://convertirwordapdf.net/aviso-legal",
+      "robots": {
+        "index": true,
+        "follow": true,
+        "noarchive": false,
+        "nosnippet": false,
+        "maxSnippet": -1,
+        "maxImagePreview": "large"
+      },
+      "openGraph": {
+        "title": "Aviso Legal | Convertir Word a PDF",
+        "description": "Información legal identificativa del titular de la plataforma.",
+        "image": "https://convertirwordapdf.net/icon-512.png",
+        "type": "website"
+      },
+      "featureImage": {
+        "url": "/icon-512.png",
+        "alt": "Aviso Legal Convertir Word a PDF",
+        "title": "Aviso Legal",
+        "width": 512,
+        "height": 512
+      },
+      "breadcrumbs": [
+        {
+          "name": "Inicio",
+          "item": "https://convertirwordapdf.net/"
+        },
+        {
+          "name": "Aviso Legal",
+          "item": "https://convertirwordapdf.net/aviso-legal"
+        }
+      ],
+      "schemaJsonLd": {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Aviso Legal"
+      },
+      "content": {
+        "h1": "Aviso Legal",
+        "subtitle": "Información legal en cumplimiento de transparencia e identificación de servicios."
+      },
+      "faqs": [],
+      "sitemap": {
+        "includeInSitemap": true,
+        "priority": 0.5,
+        "changeFrequency": "monthly"
+      },
+      "lastModified": "2026-11-07T22:09:05.148Z"
+    },
+    "/politica-de-cookies": {
+      "id": "politica-de-cookies",
+      "slug": "/politica-de-cookies",
+      "name": "Política de Cookies",
+      "seoTitle": "Política de Cookies | Convertir Word a PDF",
+      "metaDescription": "Información transparente sobre el uso de cookies técnicas y de preferencias en Convertir Word a PDF.",
+      "focusKeyword": "politica de cookies",
+      "secondaryKeywords": [
+        "cookies tecnicas",
+        "gestion de cookies"
+      ],
+      "canonicalUrl": "https://convertirwordapdf.net/politica-de-cookies",
+      "robots": {
+        "index": true,
+        "follow": true,
+        "noarchive": false,
+        "nosnippet": false,
+        "maxSnippet": -1,
+        "maxImagePreview": "large"
+      },
+      "openGraph": {
+        "title": "Política de Cookies | Convertir Word a PDF",
+        "description": "Información sobre cookies técnicas esenciales.",
+        "image": "https://convertirwordapdf.net/icon-512.png",
+        "type": "website"
+      },
+      "featureImage": {
+        "url": "/icon-512.png",
+        "alt": "Política de Cookies Convertir Word a PDF",
+        "title": "Política de Cookies",
+        "width": 512,
+        "height": 512
+      },
+      "breadcrumbs": [
+        {
+          "name": "Inicio",
+          "item": "https://convertirwordapdf.net/"
+        },
+        {
+          "name": "Política de Cookies",
+          "item": "https://convertirwordapdf.net/politica-de-cookies"
+        }
+      ],
+      "schemaJsonLd": {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Política de Cookies"
+      },
+      "content": {
+        "h1": "Política de Cookies",
+        "subtitle": "Explicación detallada sobre las tecnologías de cookies empleadas."
+      },
+      "faqs": [],
+      "sitemap": {
+        "includeInSitemap": true,
+        "priority": 0.5,
+        "changeFrequency": "monthly"
+      },
+      "lastModified": "2026-11-07T22:09:05.148Z"
+    },
+    "/contacto": {
+      "id": "contacto",
+      "slug": "/contacto",
+      "name": "Contacto y Soporte",
+      "seoTitle": "Contacto y Soporte Oficial | Convertir Word a PDF",
+      "metaDescription": "¿Tienes dudas sobre la conversión de tus documentos? Contáctanos por email easygrade6@gmail.com o teléfono +923187338727.",
+      "focusKeyword": "contacto soporte",
+      "secondaryKeywords": [
+        "atencion al cliente",
+        "soporte tecnico",
+        "whatsapp"
+      ],
+      "canonicalUrl": "https://convertirwordapdf.net/contacto",
+      "robots": {
+        "index": true,
+        "follow": true,
+        "noarchive": false,
+        "nosnippet": false,
+        "maxSnippet": -1,
+        "maxImagePreview": "large"
+      },
+      "openGraph": {
+        "title": "Contacto y Soporte | Convertir Word a PDF",
+        "description": "Atención técnica por email y WhatsApp.",
+        "image": "https://convertirwordapdf.net/icon-512.png",
+        "type": "website"
+      },
+      "featureImage": {
+        "url": "/icon-512.png",
+        "alt": "Contacto Convertir Word a PDF",
+        "title": "Contacto y Soporte",
+        "width": 512,
+        "height": 512
+      },
+      "breadcrumbs": [
+        {
+          "name": "Inicio",
+          "item": "https://convertirwordapdf.net/"
+        },
+        {
+          "name": "Contacto",
+          "item": "https://convertirwordapdf.net/contacto"
+        }
+      ],
+      "schemaJsonLd": {
+        "@context": "https://schema.org",
+        "@type": "ContactPage",
+        "name": "Contacto y Soporte"
+      },
+      "content": {
+        "h1": "Contacto y Soporte Oficial",
+        "subtitle": "Estamos a tu completa disposición para asistirte."
+      },
+      "faqs": [],
+      "sitemap": {
+        "includeInSitemap": true,
+        "priority": 0.7,
+        "changeFrequency": "monthly"
+      },
+      "lastModified": "2026-11-07T22:09:05.149Z"
     }
   },
   "redirects": [
