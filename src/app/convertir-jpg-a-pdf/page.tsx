@@ -30,8 +30,8 @@ export default function JpgToPdfPage() {
   };
 
   const defaultBreadcrumbs = [
-    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://convertirwordapdf.net/' },
-    { '@type': 'ListItem', position: 2, name: 'Convertir JPG a PDF', item: 'https://convertirwordapdf.net/convertir-jpg-a-pdf/' },
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://www.convertirwordapdf.net/' },
+    { '@type': 'ListItem', position: 2, name: 'Convertir JPG a PDF', item: 'https://www.convertirwordapdf.net/convertir-jpg-a-pdf/' },
   ];
 
   const breadcrumbsSchema = {
@@ -47,6 +47,62 @@ export default function JpgToPdfPage() {
       : defaultBreadcrumbs,
   };
 
+  const howToSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'Cómo convertir imágenes JPG a un documento PDF gratis',
+    description: 'Une y convierte fotos JPG, PNG y WebP en un archivo PDF de alta calidad en 3 pasos.',
+    totalTime: 'PT30S',
+    step: [
+      {
+        '@type': 'HowToStep',
+        position: 1,
+        name: 'Carga tus fotos o imágenes',
+        text: 'Selecciona una o varias imágenes JPG, PNG o WebP desde tu galería o explorador de archivos.',
+      },
+      {
+        '@type': 'HowToStep',
+        position: 2,
+        name: 'Configura orientación y márgenes',
+        text: 'Elige orientación vertical u horizontal, ajusta los márgenes y reordena las páginas arrastrándolas.',
+      },
+      {
+        '@type': 'HowToStep',
+        position: 3,
+        name: 'Descarga tu documento PDF unido',
+        text: 'Haz clic en Convertir a PDF y descarga tu documento listo en segundos.',
+      },
+    ],
+  };
+
+  const faqsToRender = [
+    {
+      question: '¿Puedo unir varias fotos JPG en un único archivo PDF?',
+      answer: 'Sí. Puedes subir tantas fotos como desees, ordenarlas a tu gusto y el convertidor las agrupará secuencialmente en un solo documento PDF.',
+    },
+    {
+      question: '¿Qué formatos de imagen son compatibles?',
+      answer: 'La herramienta soporta JPG, JPEG, PNG, WebP y GIF preservando los colores y la nitidez fotográfica original.',
+    },
+    {
+      question: '¿Se comprime la calidad de las imágenes al pasar a PDF?',
+      answer: 'No. El conversor mantiene la resolución nativa de cada fotografía asegurando calidad óptima para impresión y archivo.',
+    },
+  ];
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqsToRender.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
   const schemaToRender = pageSeo?.schemaJsonLd || defaultSoftwareSchema;
 
   return (
@@ -58,6 +114,14 @@ export default function JpgToPdfPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <JpgToPdfClientPage />
     </>

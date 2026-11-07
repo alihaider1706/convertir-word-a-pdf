@@ -30,9 +30,37 @@ export default function ComprimirPdfPage() {
   };
 
   const defaultBreadcrumbs = [
-    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://convertirwordapdf.net/' },
-    { '@type': 'ListItem', position: 2, name: 'Comprimir PDF', item: 'https://convertirwordapdf.net/comprimir-pdf/' },
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://www.convertirwordapdf.net/' },
+    { '@type': 'ListItem', position: 2, name: 'Comprimir PDF', item: 'https://www.convertirwordapdf.net/comprimir-pdf/' },
   ];
+
+  const howToSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'Cómo comprimir un archivo PDF sin perder calidad gratis',
+    description: 'Reduce el peso de cualquier documento PDF a menos de 1MB o 2MB en 3 pasos rápidos.',
+    totalTime: 'PT20S',
+    step: [
+      {
+        '@type': 'HowToStep',
+        position: 1,
+        name: 'Sube tu documento PDF pesado',
+        text: 'Arrastra tu archivo PDF en la herramienta de compresión.',
+      },
+      {
+        '@type': 'HowToStep',
+        position: 2,
+        name: 'Elige el nivel de compresión',
+        text: 'Selecciona entre compresión básica, recomendada, extrema o fija un peso límite como 1MB o 2MB.',
+      },
+      {
+        '@type': 'HowToStep',
+        position: 3,
+        name: 'Descarga tu PDF optimizado',
+        text: 'Haz clic en Descargar PDF para guardar tu archivo optimizado y ligero.',
+      },
+    ],
+  };
 
   const breadcrumbsSchema = {
     '@context': 'https://schema.org',
@@ -92,6 +120,10 @@ export default function ComprimirPdfPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
       />
       <script
         type="application/ld+json"

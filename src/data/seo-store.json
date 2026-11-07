@@ -2,8 +2,8 @@
   "version": 1,
   "globalSettings": {
     "siteName": "Convertir Word a PDF",
-    "baseUrl": "https://convertirwordapdf.net",
-    "defaultOgImage": "https://convertirwordapdf.net/icon-512.png",
+    "baseUrl": "https://www.convertirwordapdf.net",
+    "defaultOgImage": "https://www.convertirwordapdf.net/og-image.png",
     "twitterHandle": "@convertirwordapdf",
     "googleSiteVerification": "JrH2dh7QIfa4oUxtnxHzd7BWVVaESuoDlqIiF42DCr8",
     "bingSiteVerification": "",
@@ -24,7 +24,7 @@
         "convertidor word pdf",
         "transformar word en pdf online"
       ],
-      "canonicalUrl": "https://convertirwordapdf.net/",
+      "canonicalUrl": "https://www.convertirwordapdf.net/",
       "robots": {
         "index": true,
         "follow": true,
@@ -36,7 +36,7 @@
       "openGraph": {
         "title": "Convertir Word a PDF Gratis Online | DOC a PDF",
         "description": "Convierte Word a PDF gratis online de forma rápida y sencilla. Sube tu archivo DOC o DOCX y descarga tu PDF en segundos.",
-        "image": "https://convertirwordapdf.net/icon-512.png",
+        "image": "https://www.convertirwordapdf.net/og-image.png",
         "type": "website"
       },
       "featureImage": {
@@ -102,7 +102,7 @@
         "pdf a ppt editable",
         "como pasar pdf a powerpoint"
       ],
-      "canonicalUrl": "https://convertirwordapdf.net/convertir-pdf-a-ppt/",
+      "canonicalUrl": "https://www.convertirwordapdf.net/convertir-pdf-a-ppt/",
       "robots": {
         "index": true,
         "follow": true,
@@ -114,7 +114,7 @@
       "openGraph": {
         "title": "Convertir PDF a PPT Gratis Online | PDF a PowerPoint",
         "description": "Convierte archivos PDF a presentaciones PowerPoint (.pptx) editables al instante. Sin registros, con reconstrucción de texto, tablas e imágenes.",
-        "image": "https://convertirwordapdf.net/icon-512.png",
+        "image": "https://www.convertirwordapdf.net/og-image.png",
         "type": "website"
       },
       "featureImage": {
@@ -184,7 +184,7 @@
         "convertidor pdf a word",
         "como pasar de pdf a word"
       ],
-      "canonicalUrl": "https://convertirwordapdf.net/pdf-a-word",
+      "canonicalUrl": "https://www.convertirwordapdf.net/pdf-a-word",
       "robots": {
         "index": true,
         "follow": true,
@@ -196,7 +196,7 @@
       "openGraph": {
         "title": "Convertir PDF a Word Gratis Online | DOCX Editable",
         "description": "Transforma documentos PDF a archivos Word DOCX editables gratis. Reconstrucción de texto y formato profesional.",
-        "image": "https://convertirwordapdf.net/icon-512.png",
+        "image": "https://www.convertirwordapdf.net/og-image.png",
         "type": "website"
       },
       "featureImage": {
@@ -257,7 +257,7 @@
         "unir imagenes en pdf",
         "pasar fotos a pdf"
       ],
-      "canonicalUrl": "https://convertirwordapdf.net/convertir-jpg-a-pdf/",
+      "canonicalUrl": "https://www.convertirwordapdf.net/convertir-jpg-a-pdf/",
       "robots": {
         "index": true,
         "follow": true,
@@ -269,7 +269,7 @@
       "openGraph": {
         "title": "Convertir JPG a PDF Gratis Online | Unir Imágenes en PDF",
         "description": "Convierte y combina tus imágenes JPG y PNG en un único documento PDF organizado.",
-        "image": "https://convertirwordapdf.net/icon-512.png",
+        "image": "https://www.convertirwordapdf.net/og-image.png",
         "type": "website"
       },
       "featureImage": {
@@ -325,7 +325,7 @@
         "convertir pdf a imagenes",
         "extraer fotos de pdf"
       ],
-      "canonicalUrl": "https://convertirwordapdf.net/convertir-pdf-a-jpg/",
+      "canonicalUrl": "https://www.convertirwordapdf.net/convertir-pdf-a-jpg/",
       "robots": {
         "index": true,
         "follow": true,
@@ -337,7 +337,7 @@
       "openGraph": {
         "title": "Convertir PDF a JPG Gratis Online | Extraer Imágenes de PDF",
         "description": "Convierte páginas PDF a imágenes JPG de 72 a 300 DPI con procesamiento local seguro.",
-        "image": "https://convertirwordapdf.net/icon-512.png",
+        "image": "https://www.convertirwordapdf.net/og-image.png",
         "type": "website"
       },
       "featureImage": {
@@ -393,7 +393,7 @@
         "comprimir pdf gratis",
         "bajar peso pdf online"
       ],
-      "canonicalUrl": "https://convertirwordapdf.net/comprimir-pdf/",
+      "canonicalUrl": "https://www.convertirwordapdf.net/comprimir-pdf/",
       "robots": {
         "index": true,
         "follow": true,
@@ -405,7 +405,7 @@
       "openGraph": {
         "title": "Comprimir PDF Gratis Online | Reducir Tamaño de Archivo PDF",
         "description": "Reduce el tamaño de archivos PDF a 1MB, 2MB o máxima compresión preservando la nitidez de texto.",
-        "image": "https://convertirwordapdf.net/icon-512.png",
+        "image": "https://www.convertirwordapdf.net/og-image.png",
         "type": "website"
       },
       "featureImage": {
@@ -461,7 +461,7 @@
         "eliminacion automatica",
         "rgpd"
       ],
-      "canonicalUrl": "https://convertirwordapdf.net/politica-de-privacidad",
+      "canonicalUrl": "https://www.convertirwordapdf.net/politica-de-privacidad",
       "robots": {
         "index": true,
         "follow": true,
@@ -473,7 +473,7 @@
       "openGraph": {
         "title": "Política de Privacidad | Convertir Word a PDF",
         "description": "Tratamiento confidencial de datos y eliminación automática de documentos.",
-        "image": "https://convertirwordapdf.net/icon-512.png",
+        "image": "https://www.convertirwordapdf.net/og-image.png",
         "type": "website"
       },
       "featureImage": {
@@ -521,7 +521,7 @@
         "condiciones de uso",
         "terminos legales"
       ],
-      "canonicalUrl": "https://convertirwordapdf.net/terminos-y-condiciones",
+      "canonicalUrl": "https://www.convertirwordapdf.net/terminos-y-condiciones",
       "robots": {
         "index": true,
         "follow": true,
@@ -533,7 +533,7 @@
       "openGraph": {
         "title": "Términos y Condiciones | Convertir Word a PDF",
         "description": "Condiciones generales de uso de la plataforma.",
-        "image": "https://convertirwordapdf.net/icon-512.png",
+        "image": "https://www.convertirwordapdf.net/og-image.png",
         "type": "website"
       },
       "featureImage": {
@@ -581,7 +581,7 @@
         "datos identificativos",
         "titularidad"
       ],
-      "canonicalUrl": "https://convertirwordapdf.net/aviso-legal",
+      "canonicalUrl": "https://www.convertirwordapdf.net/aviso-legal",
       "robots": {
         "index": true,
         "follow": true,
@@ -593,7 +593,7 @@
       "openGraph": {
         "title": "Aviso Legal | Convertir Word a PDF",
         "description": "Información legal identificativa del titular de la plataforma.",
-        "image": "https://convertirwordapdf.net/icon-512.png",
+        "image": "https://www.convertirwordapdf.net/og-image.png",
         "type": "website"
       },
       "featureImage": {
@@ -641,7 +641,7 @@
         "cookies tecnicas",
         "gestion de cookies"
       ],
-      "canonicalUrl": "https://convertirwordapdf.net/politica-de-cookies",
+      "canonicalUrl": "https://www.convertirwordapdf.net/politica-de-cookies",
       "robots": {
         "index": true,
         "follow": true,
@@ -653,7 +653,7 @@
       "openGraph": {
         "title": "Política de Cookies | Convertir Word a PDF",
         "description": "Información sobre cookies técnicas esenciales.",
-        "image": "https://convertirwordapdf.net/icon-512.png",
+        "image": "https://www.convertirwordapdf.net/og-image.png",
         "type": "website"
       },
       "featureImage": {
@@ -702,7 +702,7 @@
         "soporte tecnico",
         "whatsapp"
       ],
-      "canonicalUrl": "https://convertirwordapdf.net/contacto",
+      "canonicalUrl": "https://www.convertirwordapdf.net/contacto",
       "robots": {
         "index": true,
         "follow": true,
@@ -714,7 +714,7 @@
       "openGraph": {
         "title": "Contacto y Soporte | Convertir Word a PDF",
         "description": "Atención técnica por email y WhatsApp.",
-        "image": "https://convertirwordapdf.net/icon-512.png",
+        "image": "https://www.convertirwordapdf.net/og-image.png",
         "type": "website"
       },
       "featureImage": {

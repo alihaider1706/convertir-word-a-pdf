@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import ConverterCard from '@/components/ConverterCard';
 import HowItWorks from '@/components/HowItWorks';
 import FeaturesSection from '@/components/FeaturesSection';
+import HomeSeoArticle from '@/components/home/HomeSeoArticle';
 import RelatedToolsSection from '@/components/RelatedToolsSection';
 import FAQSection from '@/components/FAQSection';
 import Footer from '@/components/Footer';
@@ -64,6 +65,9 @@ export default function HomeClientPage() {
 
         {/* Balanced 2-Column Features Section */}
         <FeaturesSection />
+
+        {/* In-depth Informational Semantic SEO Guide */}
+        <HomeSeoArticle />
 
         {/* Related Document Tools Grid */}
         <RelatedToolsSection onOpenTools={() => setToolsModalOpen(true)} />

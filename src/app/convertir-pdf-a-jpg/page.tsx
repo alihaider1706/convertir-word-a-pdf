@@ -30,8 +30,8 @@ export default function PdfToJpgPage() {
   };
 
   const defaultBreadcrumbs = [
-    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://convertirwordapdf.net/' },
-    { '@type': 'ListItem', position: 2, name: 'Convertir PDF a JPG', item: 'https://convertirwordapdf.net/convertir-pdf-a-jpg/' },
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://www.convertirwordapdf.net/' },
+    { '@type': 'ListItem', position: 2, name: 'Convertir PDF a JPG', item: 'https://www.convertirwordapdf.net/convertir-pdf-a-jpg/' },
   ];
 
   const breadcrumbsSchema = {
@@ -47,6 +47,58 @@ export default function PdfToJpgPage() {
       : defaultBreadcrumbs,
   };
 
+  const howToSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'Cómo convertir páginas de PDF a imágenes JPG de alta resolución',
+    description: 'Extrae páginas de un archivo PDF y guárdalas como imágenes JPG o PNG nítidas en 3 pasos.',
+    totalTime: 'PT30S',
+    step: [
+      {
+        '@type': 'HowToStep',
+        position: 1,
+        name: 'Sube tu documento PDF',
+        text: 'Arrastra el archivo PDF cuyas páginas deseas convertir en fotos.',
+      },
+      {
+        '@type': 'HowToStep',
+        position: 2,
+        name: 'Selecciona la resolución DPI',
+        text: 'Elige entre 72 DPI (web), 150 DPI (estándar) o 300 DPI (alta resolución para impresión).',
+      },
+      {
+        '@type': 'HowToStep',
+        position: 3,
+        name: 'Descarga tus imágenes',
+        text: 'Guarda cada página como imagen individual o descarga todas juntas empaquetadas en un archivo ZIP.',
+      },
+    ],
+  };
+
+  const faqsToRender = [
+    {
+      question: '¿Qué calidad y resolución tienen las imágenes JPG obtenidas?',
+      answer: 'Puedes seleccionar resoluciones desde 72 hasta 300 DPI con compresión JPEG calibrada para máxima nitidez de texto y gráficos vectoriales.',
+    },
+    {
+      question: '¿Puedo descargar todas las páginas en un archivo comprimido?',
+      answer: 'Sí. Dispones de un botón para descargar todas las páginas convertidas en un único archivo ZIP descargable con un clic.',
+    },
+  ];
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqsToRender.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
   const schemaToRender = pageSeo?.schemaJsonLd || defaultWebAppSchema;
 
   return (
@@ -58,6 +110,14 @@ export default function PdfToJpgPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <PdfToJpgClientPage />
     </>

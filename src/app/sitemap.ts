@@ -3,7 +3,7 @@ import { getSeoStore } from '@/lib/seo-service';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const store = getSeoStore();
-  const baseUrl = (store.globalSettings.baseUrl || 'https://convertirwordapdf.net').replace(/\/$/, '');
+  const baseUrl = (store.globalSettings.baseUrl || 'https://www.convertirwordapdf.net').replace(/\/$/, '');
   const pages = store.pages || {};
 
   const entries: MetadataRoute.Sitemap = [];

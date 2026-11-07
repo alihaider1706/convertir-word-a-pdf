@@ -34,8 +34,8 @@ export default function ConvertirPdfAPptPage() {
   };
 
   const defaultBreadcrumbs = [
-    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://convertirwordapdf.net/' },
-    { '@type': 'ListItem', position: 2, name: 'Convertir PDF a PPT', item: 'https://convertirwordapdf.net/convertir-pdf-a-ppt/' },
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://www.convertirwordapdf.net/' },
+    { '@type': 'ListItem', position: 2, name: 'Convertir PDF a PPT', item: 'https://www.convertirwordapdf.net/convertir-pdf-a-ppt/' },
   ];
 
   const breadcrumbsSchema = {
@@ -51,6 +51,62 @@ export default function ConvertirPdfAPptPage() {
       : defaultBreadcrumbs,
   };
 
+  const howToSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'Cómo convertir un PDF a PowerPoint PPTX editable gratis',
+    description: 'Transforma cualquier archivo PDF en una presentación PPTX de diapositivas genuina y editable.',
+    totalTime: 'PT45S',
+    step: [
+      {
+        '@type': 'HowToStep',
+        position: 1,
+        name: 'Arrastra tu archivo PDF',
+        text: 'Carga tu documento PDF en la caja del convertidor.',
+      },
+      {
+        '@type': 'HowToStep',
+        position: 2,
+        name: 'Reconstrucción de diapositivas',
+        text: 'El motor detecta cada página y la mapea a una diapositiva PPTX con cuadros de texto editables y fondos nítidos.',
+      },
+      {
+        '@type': 'HowToStep',
+        position: 3,
+        name: 'Descarga tu presentación PPTX',
+        text: 'Guarda tu archivo PowerPoint listo para exponer o editar en PowerPoint, Keynote o Google Slides.',
+      },
+    ],
+  };
+
+  const faqsToRender = [
+    {
+      question: '¿Las diapositivas generadas son editables en PowerPoint?',
+      answer: 'Sí. Cada página del PDF se convierte en una diapositiva con cuadros de texto nativos de PowerPoint que puedes modificar libremente.',
+    },
+    {
+      question: '¿Se conservan los fondos y diagramas?',
+      answer: 'Sí, la tecnología de renderizado dual preserva los gráficos vectoriales y elementos visuales con la más alta resolución.',
+    },
+    {
+      question: '¿Puedo elegir qué páginas convertir a diapositivas?',
+      answer: 'Sí, dispones de un selector de rango para convertir solo las páginas deseadas o el documento completo.',
+    },
+  ];
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqsToRender.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
   const schemaToRender = pageSeo?.schemaJsonLd || defaultSoftwareSchema;
 
   return (
@@ -62,6 +118,14 @@ export default function ConvertirPdfAPptPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <PdfToPptClientPage />
     </>

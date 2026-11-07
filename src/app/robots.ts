@@ -3,7 +3,7 @@ import { getSeoStore } from '@/lib/seo-service';
 
 export default function robots(): MetadataRoute.Robots {
   const store = getSeoStore();
-  const baseUrl = store.globalSettings.baseUrl || 'https://convertirwordapdf.net';
+  const baseUrl = store.globalSettings.baseUrl || 'https://www.convertirwordapdf.net';
 
   return {
     rules: {
