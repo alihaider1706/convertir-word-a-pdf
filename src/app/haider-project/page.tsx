@@ -107,6 +107,7 @@ export default function HaiderProjectAdmin() {
     twitterHandle: '@convertirwordapdf',
     googleSiteVerification: '',
     bingSiteVerification: '',
+    googleAnalyticsId: '',
   });
 
   // Schema json raw editing state
@@ -2229,6 +2230,25 @@ export default function HaiderProjectAdmin() {
                       placeholder="google-site-verification=..."
                       className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                      ID de Medición Google Analytics 4 (Measurement ID)
+                    </label>
+                    <input
+                      type="text"
+                      value={globalSettings.googleAnalyticsId || ''}
+                      onChange={(e) => {
+                        setGlobalSettings({ ...globalSettings, googleAnalyticsId: e.target.value });
+                        setHasUnsavedChanges(true);
+                      }}
+                      placeholder="G-XXXXXXXXXX"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Introduce tu ID de Google Analytics (comienza por G-). El script oficial gtag.js se inyectará automáticamente en todas las páginas.
+                    </p>
                   </div>
 
                   <div>

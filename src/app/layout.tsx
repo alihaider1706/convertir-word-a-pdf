@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { getSeoStore } from '@/lib/seo-service';
 
@@ -69,6 +70,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const store = getSeoStore();
+  const gaId = store.globalSettings?.googleAnalyticsId || process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html lang="es" className="scroll-smooth">
       <head>
@@ -76,6 +80,28 @@ export default function RootLayout({
           name="google-site-verification"
           content="JrH2dh7QIfa4oUxtnxHzd7BWVVaESuoDlqIiF42DCr8"
         />
+        {gaId && (
+          <>
+            <Script
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            />
+            <Script
+              id="google-analytics"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${gaId}', {
+                    page_path: window.location.pathname,
+                  });
+                `,
+              }}
+            />
+          </>
+        )}
       </head>
       <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900">
         {children}

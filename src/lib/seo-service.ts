@@ -76,6 +76,7 @@ export interface GlobalSeoSettings {
   twitterHandle: string;
   googleSiteVerification?: string;
   bingSiteVerification?: string;
+  googleAnalyticsId?: string;
 }
 
 export interface SeoStoreData {
