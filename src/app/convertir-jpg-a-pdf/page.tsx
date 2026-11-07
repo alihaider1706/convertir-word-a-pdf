@@ -1,50 +1,19 @@
 import type { Metadata } from 'next';
 import JpgToPdfClientPage from '@/components/jpg-to-pdf/JpgToPdfClientPage';
+import { generatePageMetadata, getPageSeo } from '@/lib/seo-service';
 
-export const metadata: Metadata = {
-  title: 'Convertir JPG a PDF Gratis Online | Imágenes a PDF',
-  description:
-    'Convierte JPG a PDF gratis online. Une varias imágenes en un solo PDF, organiza páginas, ajusta el tamaño y descarga tu documento fácilmente.',
-  keywords: [
-    'convertir jpg a pdf',
-    'jpg a pdf',
-    'convertir de jpg a pdf',
-    'convertir imagen a pdf',
-    'convertir jpg a pdf gratis',
-    'convertir jpeg a pdf',
-    'imagenes a pdf',
-    'fotos a pdf',
-    'varias imagenes a pdf',
-    'unir imagenes en pdf',
-    'convertir fotos en pdf',
-    'jpg a pdf online',
-    'pasar jpg a pdf',
-    'convertir imagen jpg a pdf',
-    'convertir jpg a pdf sin perder calidad',
-    'convertir jpg a pdf gratis sin registro',
-  ],
-  alternates: {
-    canonical: '/convertir-jpg-a-pdf/',
-  },
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('/convertir-jpg-a-pdf/', {
     title: 'Convertir JPG a PDF Gratis Online | Imágenes a PDF',
     description:
-      'Convierte imágenes JPG, PNG y WebP a documentos PDF al instante. Combina múltiples fotos, define orden de páginas y descarga gratis.',
-    type: 'website',
-    url: '/convertir-jpg-a-pdf/',
-    locale: 'es_ES',
-    siteName: 'Convertir JPG a PDF',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Convertir JPG a PDF Gratis Online | Imágenes a PDF',
-    description:
-      'Convierte y une fotos JPG a PDF en segundos sin perder calidad. Herramienta online gratuita y segura.',
-  },
-};
+      'Convierte JPG a PDF gratis online. Une varias imágenes en un solo PDF, organiza páginas, ajusta el tamaño y descarga tu documento fácilmente.',
+  });
+}
 
 export default function JpgToPdfPage() {
-  const softwareSchema = {
+  const pageSeo = getPageSeo('/convertir-jpg-a-pdf/');
+
+  const defaultSoftwareSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
     name: 'Convertir JPG a PDF Gratis Online',
@@ -60,34 +29,35 @@ export default function JpgToPdfPage() {
       'Herramienta en línea gratuita y profesional para convertir y combinar imágenes JPG, JPEG, PNG y WebP en documentos PDF de alta resolución con orientación automática, márgenes ajustables, recorte y cifrado AES-256.',
   };
 
-  const breadcrumbSchema = {
+  const defaultBreadcrumbs = [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://convertirwordapdf.net/' },
+    { '@type': 'ListItem', position: 2, name: 'Convertir JPG a PDF', item: 'https://convertirwordapdf.net/convertir-jpg-a-pdf/' },
+  ];
+
+  const breadcrumbsSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Inicio',
-        item: 'https://convertirwordapdf.org/',
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Convertir JPG a PDF',
-        item: 'https://convertirwordapdf.org/convertir-jpg-a-pdf/',
-      },
-    ],
+    itemListElement: pageSeo?.breadcrumbs?.length
+      ? pageSeo.breadcrumbs.map((b, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: b.name,
+          item: b.item,
+        }))
+      : defaultBreadcrumbs,
   };
+
+  const schemaToRender = pageSeo?.schemaJsonLd || defaultSoftwareSchema;
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaToRender) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
       />
       <JpgToPdfClientPage />
     </>

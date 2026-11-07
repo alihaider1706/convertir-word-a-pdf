@@ -1,53 +1,19 @@
 import type { Metadata } from 'next';
 import PdfToPptClientPage from '@/components/pdf-to-ppt/PdfToPptClientPage';
+import { generatePageMetadata, getPageSeo } from '@/lib/seo-service';
 
-export const metadata: Metadata = {
-  title: 'Convertir PDF a PPT Gratis Online | PDF a PowerPoint',
-  description:
-    'Convierte PDF a PPT gratis y online. Transforma tus documentos en presentaciones PowerPoint editables, conserva el formato y descarga tu archivo PPTX fácilmente.',
-  keywords: [
-    'convertir pdf a ppt',
-    'convertir de pdf a ppt',
-    'convertir pdf a powerpoint',
-    'convertir pdf a ppt gratis',
-    'convertir de pdf a ppt gratis',
-    'convertir pdf a powerpoint gratis',
-    'convertir pdf a ppt online',
-    'convertir pdf a ppt online gratis',
-    'pdf a ppt online',
-    'pasar pdf a ppt gratis',
-    'transformar pdf a ppt gratis',
-    'convertir pdf a ppt editable',
-    'convertir pdf a ppt editable gratis',
-    'convertir pdf a powerpoint editable',
-    'convertir pdf a ppt sin perder formato gratis',
-    'como convertir pdf a ppt',
-    'como convertir de pdf a ppt',
-    'como pasar un pdf a powerpoint',
-    'como convertir un archivo pdf a ppt',
-  ],
-  alternates: {
-    canonical: 'https://convertirwordapdf.net/convertir-pdf-a-ppt/',
-  },
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('/convertir-pdf-a-ppt/', {
     title: 'Convertir PDF a PPT Gratis Online | PDF a PowerPoint',
     description:
-      'Convierte archivos PDF a presentaciones PowerPoint (.pptx) editables al instante. Sin registros, con reconstrucción de texto, tablas e imágenes.',
-    type: 'website',
-    url: 'https://convertirwordapdf.net/convertir-pdf-a-ppt/',
-    locale: 'es_ES',
-    siteName: 'Convertir Word a PDF',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Convertir PDF a PPT Gratis Online | PDF a PowerPoint',
-    description:
-      'Convierte documentos PDF a presentaciones PowerPoint (.pptx) genuinas y editables. Rápido, seguro y sin instalar programas.',
-  },
-};
+      'Convierte PDF a PPT gratis y online. Transforma tus documentos en presentaciones PowerPoint editables, conserva el formato y descarga tu archivo PPTX fácilmente.',
+  });
+}
 
 export default function ConvertirPdfAPptPage() {
-  const softwareSchema = {
+  const pageSeo = getPageSeo('/convertir-pdf-a-ppt/');
+
+  const defaultSoftwareSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'Convertir PDF a PPT Online Gratis',
@@ -67,34 +33,35 @@ export default function ConvertirPdfAPptPage() {
     },
   };
 
-  const breadcrumbSchema = {
+  const defaultBreadcrumbs = [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://convertirwordapdf.net/' },
+    { '@type': 'ListItem', position: 2, name: 'Convertir PDF a PPT', item: 'https://convertirwordapdf.net/convertir-pdf-a-ppt/' },
+  ];
+
+  const breadcrumbsSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Inicio',
-        item: 'https://convertirwordapdf.net/',
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Convertir PDF a PPT',
-        item: 'https://convertirwordapdf.net/convertir-pdf-a-ppt/',
-      },
-    ],
+    itemListElement: pageSeo?.breadcrumbs?.length
+      ? pageSeo.breadcrumbs.map((b, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: b.name,
+          item: b.item,
+        }))
+      : defaultBreadcrumbs,
   };
+
+  const schemaToRender = pageSeo?.schemaJsonLd || defaultSoftwareSchema;
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaToRender) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
       />
       <PdfToPptClientPage />
     </>
