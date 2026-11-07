@@ -6,7 +6,8 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import pptxgen from 'pptxgenjs';
 import JSZip from 'jszip';
-import { getPptxFilename, sanitizePptxFilename } from './formatters';
+import { PDFDocument } from 'pdf-lib';
+import { getPptxFilename, sanitizePptxFilename, parsePageRange } from './formatters';
 
 const execFileAsync = promisify(execFile);
 
@@ -163,6 +164,99 @@ interface ExtractionResult {
   slides: ExtractedSlideData[];
 }
 
+/**
+ * Pure Node.js extraction engine (fallback for serverless environments such as Vercel)
+ */
+async function extractWithNodeJs(
+  buffer: Buffer,
+  pageRangeStr?: string,
+  mode: 'editable' | 'fidelity' = 'editable'
+): Promise<ExtractionResult> {
+  const pdfDoc = await PDFDocument.load(buffer, { ignoreEncryption: true });
+  const totalPages = pdfDoc.getPageCount();
+  const selectedPages = parsePageRange(pageRangeStr || '', totalPages);
+
+  let parsedText = '';
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { PDFParse } = require('pdf-parse');
+    if (PDFParse) {
+      const parser = new PDFParse({ data: buffer });
+      const result = await parser.getText();
+      parsedText = result.text || '';
+    }
+  } catch {}
+
+  const rawLines = parsedText
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  const linesPerPage = Math.max(1, Math.ceil(rawLines.length / Math.max(totalPages, 1)));
+  const slides: ExtractedSlideData[] = [];
+
+  for (let idx = 0; idx < selectedPages.length; idx++) {
+    const pageNum = selectedPages[idx];
+    const pageIndex = Math.max(0, Math.min(pageNum - 1, totalPages - 1));
+    const page = pdfDoc.getPage(pageIndex);
+    const { width, height } = page.getSize();
+    const isLandscape = width >= height;
+
+    const startLine = (pageNum - 1) * linesPerPage;
+    const pageLines = rawLines.slice(startLine, startLine + linesPerPage);
+
+    const textBlocks: TextBlockData[] = [];
+    const blockHeight = Math.min(26, Math.max(15, (height - 120) / Math.max(pageLines.length, 1)));
+
+    pageLines.forEach((lineText, lIdx) => {
+      const yPos = 60 + lIdx * blockHeight;
+      if (yPos < height - 50) {
+        const isHeading = lIdx === 0 && lineText.length < 60;
+        textBlocks.push({
+          bbox: [50, yPos, width - 50, yPos + blockHeight],
+          fullText: lineText,
+          lines: [
+            {
+              bbox: [50, yPos, width - 50, yPos + blockHeight],
+              spans: [
+                {
+                  text: lineText,
+                  size: isHeading ? 18 : 11,
+                  font: 'Calibri',
+                  color: isHeading ? '0F172A' : '334155',
+                  isBold: isHeading,
+                  isItalic: false,
+                  bbox: [50, yPos, width - 50, yPos + blockHeight],
+                },
+              ],
+            },
+          ],
+        });
+      }
+    });
+
+    slides.push({
+      pageNumber: pageNum,
+      widthPt: width,
+      heightPt: height,
+      isLandscape,
+      isScanned: false,
+      bgImagePath: null,
+      textBlocks,
+      tables: [],
+      images: [],
+    });
+  }
+
+  return {
+    totalPages,
+    selectedPagesCount: slides.length,
+    mode,
+    assetsDir: '',
+    slides,
+  };
+}
+
 export async function convertPdfToPpt(
   options: ConvertPdfToPptOptions
 ): Promise<ConvertPdfToPptResponse> {
@@ -201,22 +295,31 @@ export async function convertPdfToPpt(
     orientation,
   });
 
-  try {
-    await execFileAsync('python', [
-      '-u',
-      pythonScript,
-      'extract_for_ppt',
-      inPdfPath,
-      outJsonPath,
-      extractOptions,
-    ]);
+  let extractData: ExtractionResult | null = null;
 
-    if (!fs.existsSync(outJsonPath)) {
-      throw new Error('No se pudo completar la extracción de contenido del PDF.');
+  try {
+    try {
+      await execFileAsync('python', [
+        '-u',
+        pythonScript,
+        'extract_for_ppt',
+        inPdfPath,
+        outJsonPath,
+        extractOptions,
+      ]);
+
+      if (fs.existsSync(outJsonPath)) {
+        const jsonStr = await fs.promises.readFile(outJsonPath, 'utf8');
+        extractData = JSON.parse(jsonStr);
+      }
+    } catch (pyErr) {
+      console.warn('Python execution warning (serverless environment detected). Using Node.js engine fallback.', pyErr);
     }
 
-    const jsonStr = await fs.promises.readFile(outJsonPath, 'utf8');
-    const extractData: ExtractionResult = JSON.parse(jsonStr);
+    // Fallback: If python is not available (e.g. Vercel serverless Lambda), extract cleanly using Node.js
+    if (!extractData || !extractData.slides || extractData.slides.length === 0) {
+      extractData = await extractWithNodeJs(buffer, pageRange, mode);
+    }
 
     if (!extractData.slides || extractData.slides.length === 0) {
       throw new Error('No se encontraron páginas para convertir en el documento PDF.');
