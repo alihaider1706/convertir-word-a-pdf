@@ -4,7 +4,6 @@ import { getSeoStore } from '@/lib/seo-service';
 
 export async function generateMetadata(): Promise<Metadata> {
   const store = getSeoStore();
-  const googleVerification = store.globalSettings?.googleSiteVerification || process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
   const bingVerification = store.globalSettings?.bingSiteVerification;
 
   return {
@@ -29,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
       follow: true,
     },
     verification: {
-      google: googleVerification || undefined,
+      google: 'JrH2dh7QIfa4oUxtnxHzd7BWVVaESuoDlqIiF42DCr8',
       other: bingVerification ? { 'msvalidate.01': bingVerification } : undefined,
     },
     openGraph: {
@@ -72,6 +71,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className="scroll-smooth">
+      <head>
+        <meta
+          name="google-site-verification"
+          content="JrH2dh7QIfa4oUxtnxHzd7BWVVaESuoDlqIiF42DCr8"
+        />
+      </head>
       <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900">
         {children}
       </body>
