@@ -325,45 +325,45 @@ export default function PdfToJpgConverter() {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`relative border rounded-lg p-8 sm:p-10 text-center cursor-pointer transition-all ${
+          className={`relative border-2 border-dashed rounded-xl p-8 sm:p-12 text-center cursor-pointer transition-all ${
             isDragOver
-              ? 'border-blue-600 bg-blue-50/50'
-              : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/40 shadow-2xs'
+              ? 'border-blue-600 bg-blue-50/50 scale-[0.995]'
+              : 'border-slate-200/90 hover:border-slate-300 bg-slate-50/20 hover:bg-slate-50/50'
           }`}
         >
-          <div className="w-10 h-10 mx-auto mb-3 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center border border-slate-200/60">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-2xs">
             {isLoadingPdf ? (
-              <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+              <Loader2 className="w-7 h-7 animate-spin text-blue-600" />
             ) : (
-              <UploadCloud className="w-5 h-5 text-slate-600" />
+              <UploadCloud className="w-7 h-7 stroke-[1.75]" />
             )}
           </div>
 
-          <h3 className="text-sm sm:text-base font-semibold text-slate-900 tracking-tight">
-            {isLoadingPdf ? 'Analizando documento PDF...' : 'Arrastra y suelta tu archivo PDF aquí'}
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+            {isLoadingPdf ? 'Analizando documento PDF...' : 'Arrastra tu archivo PDF aquí'}
           </h3>
 
-          <p className="text-xs text-slate-500 mt-1">
-            o haz clic para seleccionar desde tu computadora o dispositivo móvil
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-sm mx-auto">
+            o haz clic para seleccionar tu documento desde este dispositivo
           </p>
 
-          <div className="mt-4">
+          <div className="mt-5">
             <button
               type="button"
               disabled={isLoadingPdf}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-2xs"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all shadow-2xs"
             >
               <FileText className="w-4 h-4" />
               <span>Seleccionar archivo PDF</span>
             </button>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-center gap-3 text-[11px] text-slate-400">
+          <div className="mt-6 pt-5 border-t border-slate-200/70 flex items-center justify-center gap-3 text-xs text-slate-500">
             <span>Formato admitido: PDF (.pdf)</span>
             <span>•</span>
             <span>Hasta 100 MB</span>
             <span>•</span>
-            <span>Procesamiento local 100% privado</span>
+            <span className="text-emerald-700 font-semibold">Procesamiento local 100% privado</span>
           </div>
         </div>
       )}

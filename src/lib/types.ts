@@ -191,5 +191,8 @@ export interface PdfToPptBatchFileItem {
   mode?: PdfToPptMode;
   pageRange?: string;
   orientation?: 'auto' | 'landscape' | 'portrait';
+  thumbnails?: Record<number, string>;
+  selectedPages?: number[];
+  isLoadingThumbnails?: boolean;
 }
 

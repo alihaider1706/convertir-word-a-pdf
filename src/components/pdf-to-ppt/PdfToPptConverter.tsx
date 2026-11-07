@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, DragEvent, ChangeEvent } from 'react';
+import React, { useState, useRef, useEffect, DragEvent, ChangeEvent } from 'react';
 import confetti from 'canvas-confetti';
 import {
   FileText,
@@ -24,6 +24,8 @@ import {
   Check,
   SlidersHorizontal,
   Settings2,
+  Eye,
+  FileCheck,
 } from 'lucide-react';
 import {
   PdfToPptBatchFileItem,
@@ -37,6 +39,7 @@ import {
   sanitizePptxFilename,
   parsePageRange,
 } from '@/lib/formatters';
+import { loadPdfDocument, renderPageThumbnail } from '@/lib/pdfToJpgConverter';
 
 interface PasswordModalProps {
   isOpen: boolean;
@@ -63,20 +66,20 @@ function PasswordModal({ isOpen, fileName, onClose, onSubmit }: PasswordModalPro
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
       <div className="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full p-6 space-y-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200/60">
             <Lock className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900">PDF Protegido</h3>
+            <h3 className="text-base font-bold text-slate-900">PDF Protegido con Contraseña</h3>
             <p className="text-xs text-slate-500 truncate max-w-xs">{fileName}</p>
           </div>
         </div>
 
         <p className="text-xs text-slate-600 leading-relaxed">
-          Este documento PDF está protegido con contraseña. Ingresa la clave para desbloquear el contenido y convertirlo a PowerPoint:
+          Este documento PDF está protegido. Ingresa la clave para desbloquear el contenido y convertirlo a PowerPoint:
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -124,12 +127,15 @@ export default function PdfToPptConverter() {
   const [isConvertingBatch, setIsConvertingBatch] = useState<boolean>(false);
   const [isGeneratingZip, setIsGeneratingZip] = useState<boolean>(false);
 
-  // Global tool settings applied by default
+  // Global tool settings
   const [globalMode, setGlobalMode] = useState<PdfToPptMode>('editable');
   const [globalPageRange, setGlobalPageRange] = useState<string>('');
   const [rangeType, setRangeType] = useState<'all' | 'custom'>('all');
   const [orientation, setOrientation] = useState<'auto' | 'landscape' | 'portrait'>('auto');
   const [showSettings, setShowSettings] = useState<boolean>(false);
+
+  // Selected file index for active view
+  const [activeFileIndex, setActiveFileIndex] = useState<number>(0);
 
   // Password Modal target
   const [passwordTargetItem, setPasswordTargetItem] = useState<PdfToPptBatchFileItem | null>(null);
@@ -140,6 +146,8 @@ export default function PdfToPptConverter() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllersRef = useRef<Record<string, AbortController>>({});
+
+  const activeItem: PdfToPptBatchFileItem | undefined = fileList[activeFileIndex] || fileList[0];
 
   const triggerConfetti = () => {
     try {
@@ -152,21 +160,78 @@ export default function PdfToPptConverter() {
     } catch {}
   };
 
-  // Inspect page count for uploaded PDF
-  const inspectPdfPages = async (file: File): Promise<number | undefined> => {
+  // Asynchronously generate client-side thumbnails for a given file item
+  const generateThumbnailsForFile = async (item: PdfToPptBatchFileItem) => {
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/pdf-to-ppt/pages', {
-        method: 'POST',
-        body: formData,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return data.pageCount;
+      const buffer = await item.file.arrayBuffer();
+      const { pdfDoc, summary } = await loadPdfDocument(buffer);
+      const totalPages = summary.totalPages;
+      const initialPages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+      setFileList((prev) =>
+        prev.map((f) =>
+          f.id === item.id
+            ? {
+                ...f,
+                pageCount: totalPages,
+                selectedPages: f.selectedPages || initialPages,
+                isLoadingThumbnails: true,
+              }
+            : f
+        )
+      );
+
+      // Render up to 24 thumbnails client-side
+      const maxThumbnails = Math.min(totalPages, 24);
+      const thumbs: Record<number, string> = {};
+
+      for (let p = 1; p <= maxThumbnails; p++) {
+        try {
+          const thumbUrl = await renderPageThumbnail(pdfDoc, p, 300);
+          thumbs[p] = thumbUrl;
+          if (p % 2 === 0 || p === maxThumbnails) {
+            setFileList((prev) =>
+              prev.map((f) =>
+                f.id === item.id
+                  ? {
+                      ...f,
+                      thumbnails: { ...f.thumbnails, ...thumbs },
+                    }
+                  : f
+              )
+            );
+          }
+        } catch (e) {
+          console.warn(`Could not render thumbnail for page ${p}`, e);
+        }
       }
-    } catch {}
-    return undefined;
+
+      setFileList((prev) =>
+        prev.map((f) =>
+          f.id === item.id
+            ? {
+                ...f,
+                thumbnails: { ...f.thumbnails, ...thumbs },
+                isLoadingThumbnails: false,
+              }
+            : f
+        )
+      );
+    } catch (err: any) {
+      if (err && (err.name === 'PasswordException' || err.message === 'PASSWORD_REQUIRED')) {
+        setFileList((prev) =>
+          prev.map((f) =>
+            f.id === item.id
+              ? { ...f, requiresPassword: true, isLoadingThumbnails: false }
+              : f
+          )
+        );
+      } else {
+        setFileList((prev) =>
+          prev.map((f) => (f.id === item.id ? { ...f, isLoadingThumbnails: false } : f))
+        );
+      }
+    }
   };
 
   // Add multiple PDF files
@@ -204,6 +269,9 @@ export default function PdfToPptConverter() {
         mode: globalMode,
         pageRange: rangeType === 'custom' ? globalPageRange : undefined,
         orientation,
+        thumbnails: {},
+        selectedPages: [],
+        isLoadingThumbnails: !errorMessage,
       };
 
       newItems.push(item);
@@ -216,16 +284,10 @@ export default function PdfToPptConverter() {
 
     setFileList((prev) => [...prev, ...newItems]);
 
-    // Asynchronously retrieve page count for waiting files
+    // Kick off client-side thumbnail rendering
     for (const item of newItems) {
       if (item.status === 'waiting') {
-        inspectPdfPages(item.file).then((pCount) => {
-          if (pCount) {
-            setFileList((prev) =>
-              prev.map((f) => (f.id === item.id ? { ...f, pageCount: pCount } : f))
-            );
-          }
-        });
+        generateThumbnailsForFile(item);
       }
     }
   };
@@ -261,48 +323,108 @@ export default function PdfToPptConverter() {
   const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       handleAddFiles(e.target.files);
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      e.target.value = '';
     }
   };
 
+  // Toggle slide selection for a file
+  const handleToggleSlide = (fileId: string, pageNum: number) => {
+    setFileList((prev) =>
+      prev.map((item) => {
+        if (item.id !== fileId) return item;
+        const total = item.pageCount || 1;
+        const current = item.selectedPages && item.selectedPages.length > 0
+          ? item.selectedPages
+          : Array.from({ length: total }, (_, i) => i + 1);
+
+        const isAlreadySelected = current.includes(pageNum);
+        const updated = isAlreadySelected
+          ? current.filter((p) => p !== pageNum)
+          : [...current, pageNum].sort((a, b) => a - b);
+
+        return {
+          ...item,
+          selectedPages: updated,
+          pageRange: updated.length === total ? undefined : updated.join(','),
+        };
+      })
+    );
+  };
+
+  // Select all or none
+  const handleSelectAllSlides = (fileId: string, selectAll: boolean) => {
+    setFileList((prev) =>
+      prev.map((item) => {
+        if (item.id !== fileId) return item;
+        const total = item.pageCount || 1;
+        const allPages = Array.from({ length: total }, (_, i) => i + 1);
+        const updated = selectAll ? allPages : [];
+        return {
+          ...item,
+          selectedPages: updated,
+          pageRange: selectAll ? undefined : '',
+        };
+      })
+    );
+  };
+
+  // Invert selection
+  const handleInvertSlideSelection = (fileId: string) => {
+    setFileList((prev) =>
+      prev.map((item) => {
+        if (item.id !== fileId) return item;
+        const total = item.pageCount || 1;
+        const current = item.selectedPages || Array.from({ length: total }, (_, i) => i + 1);
+        const inverted = Array.from({ length: total }, (_, i) => i + 1).filter(
+          (p) => !current.includes(p)
+        );
+        return {
+          ...item,
+          selectedPages: inverted,
+          pageRange: inverted.length === total ? undefined : inverted.join(','),
+        };
+      })
+    );
+  };
+
+  // Clear single item
   const handleRemoveItem = (id: string) => {
     if (abortControllersRef.current[id]) {
       abortControllersRef.current[id].abort();
       delete abortControllersRef.current[id];
     }
     setFileList((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const handleCancelItem = (id: string) => {
-    if (abortControllersRef.current[id]) {
-      abortControllersRef.current[id].abort();
-      delete abortControllersRef.current[id];
+    if (activeFileIndex >= fileList.length - 1) {
+      setActiveFileIndex(Math.max(0, fileList.length - 2));
     }
-    setFileList((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status: 'waiting',
-              progress: 0,
-              currentStage: undefined,
-              errorMessage: 'Conversión cancelada por el usuario.',
-            }
-          : item
-      )
-    );
   };
 
+  // Clear all items
   const handleClearAll = () => {
     Object.values(abortControllersRef.current).forEach((ctrl) => ctrl.abort());
     abortControllersRef.current = {};
     setFileList([]);
+    setActiveFileIndex(0);
     setGlobalError('');
   };
 
-  // Single file conversion worker
+  // Start in-place rename
+  const handleStartRename = (item: PdfToPptBatchFileItem) => {
+    setEditingId(item.id);
+    setEditingName(item.customName.replace(/\.pptx$/i, ''));
+  };
+
+  // Save rename
+  const handleSaveRename = (id: string) => {
+    const sanitized = sanitizePptxFilename(editingName);
+    setFileList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, customName: sanitized } : item))
+    );
+    setEditingId(null);
+    setEditingName('');
+  };
+
+  // Convert a single file item
   const convertSingleFile = async (
     item: PdfToPptBatchFileItem,
     passwordOverride?: string
@@ -310,7 +432,6 @@ export default function PdfToPptConverter() {
     const controller = new AbortController();
     abortControllersRef.current[item.id] = controller;
 
-    // Update status to processing
     setFileList((prev) =>
       prev.map((f) =>
         f.id === item.id
@@ -318,7 +439,7 @@ export default function PdfToPptConverter() {
               ...f,
               status: 'processing',
               progress: 15,
-              currentStage: 'Subiendo documento...',
+              currentStage: 'Validando documento PDF...',
               errorMessage: undefined,
             }
           : f
@@ -327,48 +448,51 @@ export default function PdfToPptConverter() {
 
     const formData = new FormData();
     formData.append('file', item.file);
-    if (item.customName) {
-      formData.append('customFilename', sanitizePptxFilename(item.customName));
-    }
+    formData.append('mode', item.mode || globalMode);
+    formData.append('customName', item.customName);
+
     const pwd = passwordOverride || item.password;
     if (pwd) {
       formData.append('password', pwd);
     }
-    formData.append('mode', item.mode || globalMode);
-    if (item.pageRange) {
+
+    // Determine slide page range
+    if (item.selectedPages && item.selectedPages.length > 0 && item.pageCount && item.selectedPages.length < item.pageCount) {
+      formData.append('pageRange', item.selectedPages.join(','));
+    } else if (item.pageRange) {
       formData.append('pageRange', item.pageRange);
     }
-    if (item.orientation) {
-      formData.append('orientation', item.orientation);
+
+    if (item.orientation || orientation) {
+      formData.append('orientation', item.orientation || orientation);
     }
 
     try {
-      // Progress simulation stages
       const progressTimer1 = setTimeout(() => {
         setFileList((prev) =>
           prev.map((f) =>
             f.id === item.id && f.status === 'processing'
-              ? { ...f, progress: 35, currentStage: 'Analizando páginas y estructura...' }
+              ? { ...f, progress: 40, currentStage: 'Analizando diapositivas y estructura...' }
               : f
           )
         );
-      }, 500);
+      }, 400);
 
       const progressTimer2 = setTimeout(() => {
         setFileList((prev) =>
           prev.map((f) =>
             f.id === item.id && f.status === 'processing'
-              ? { ...f, progress: 65, currentStage: 'Extrayendo textos, tablas e imágenes...' }
+              ? { ...f, progress: 70, currentStage: 'Extrayendo textos, tablas y gráficos...' }
               : f
           )
         );
-      }, 1200);
+      }, 1100);
 
       const progressTimer3 = setTimeout(() => {
         setFileList((prev) =>
           prev.map((f) =>
             f.id === item.id && f.status === 'processing'
-              ? { ...f, progress: 85, currentStage: 'Generando diapositivas PPTX...' }
+              ? { ...f, progress: 90, currentStage: 'Generando presentación PowerPoint (.pptx)...' }
               : f
           )
         );
@@ -387,7 +511,6 @@ export default function PdfToPptConverter() {
       const data = await response.json();
 
       if (response.status === 423 && data.requiresPassword) {
-        // Document requires password
         setFileList((prev) =>
           prev.map((f) =>
             f.id === item.id
@@ -405,7 +528,6 @@ export default function PdfToPptConverter() {
       }
 
       if (response.status === 401) {
-        // Password invalid
         setFileList((prev) =>
           prev.map((f) =>
             f.id === item.id
@@ -426,7 +548,6 @@ export default function PdfToPptConverter() {
         throw new Error(data.error || 'Fallo en la conversión del archivo.');
       }
 
-      // Success
       const result: PdfToPptConversionResult = {
         id: data.id,
         originalName: data.originalName,
@@ -449,16 +570,24 @@ export default function PdfToPptConverter() {
                 progress: 100,
                 currentStage: 'Completado',
                 result,
-                slideCount: data.slideCount,
-                errorMessage: undefined,
               }
             : f
         )
       );
 
+      triggerConfetti();
       return true;
     } catch (err: any) {
-      if (err.name === 'AbortError') return false;
+      if (err.name === 'AbortError') {
+        setFileList((prev) =>
+          prev.map((f) =>
+            f.id === item.id
+              ? { ...f, status: 'waiting', progress: 0, currentStage: undefined }
+              : f
+          )
+        );
+        return false;
+      }
 
       setFileList((prev) =>
         prev.map((f) =>
@@ -467,8 +596,7 @@ export default function PdfToPptConverter() {
                 ...f,
                 status: 'failed',
                 progress: 0,
-                currentStage: undefined,
-                errorMessage: err.message || 'Error inesperado durante la conversión.',
+                errorMessage: err.message || 'Error desconocido durante la conversión.',
               }
             : f
         )
@@ -479,52 +607,51 @@ export default function PdfToPptConverter() {
     }
   };
 
-  // Convert all waiting files
+  // Convert all waiting or failed items
   const handleConvertAll = async () => {
-    const itemsToProcess = fileList.filter(
+    const toConvert = fileList.filter(
       (item) => item.status === 'waiting' || item.status === 'failed'
     );
-    if (itemsToProcess.length === 0) return;
+    if (toConvert.length === 0) return;
 
     setIsConvertingBatch(true);
-    let successCount = 0;
-
-    for (const item of itemsToProcess) {
-      const ok = await convertSingleFile(item);
-      if (ok) successCount++;
+    for (const item of toConvert) {
+      await convertSingleFile(item);
     }
-
     setIsConvertingBatch(false);
-    if (successCount > 0) {
-      triggerConfetti();
-    }
   };
 
-  // Retry a failed file
+  // Retry an individual file
   const handleRetryItem = (item: PdfToPptBatchFileItem) => {
     convertSingleFile(item);
   };
 
-  // Batch ZIP download
+  // Cancel in-progress conversion
+  const handleCancelItem = (id: string) => {
+    if (abortControllersRef.current[id]) {
+      abortControllersRef.current[id].abort();
+      delete abortControllersRef.current[id];
+    }
+  };
+
+  // Download all converted as a ZIP
   const handleDownloadAllZip = async () => {
     const completedItems = fileList.filter(
-      (item) => item.status === 'completed' && item.result?.id
+      (item) => item.status === 'completed' && item.result
     );
     if (completedItems.length === 0) return;
 
     setIsGeneratingZip(true);
     try {
-      const payload = {
-        items: completedItems.map((item) => ({
-          fileId: item.result!.id,
-          customName: item.customName,
-        })),
-      };
+      const itemsPayload = completedItems.map((item) => ({
+        downloadUrl: item.result!.downloadUrl,
+        filename: item.result!.convertedName,
+      }));
 
       const res = await fetch('/api/pdf-to-ppt/batch-zip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ items: itemsPayload }),
       });
 
       if (!res.ok) {
@@ -532,14 +659,14 @@ export default function PdfToPptConverter() {
       }
 
       const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'presentaciones_powerpoint.zip';
+      a.download = `presentaciones-powerpoint-${new Date().toISOString().slice(0, 10)}.zip`;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err: any) {
       setGlobalError(err.message || 'Error al descargar el archivo ZIP.');
     } finally {
@@ -547,254 +674,213 @@ export default function PdfToPptConverter() {
     }
   };
 
-  // Start in-place rename
-  const handleStartRename = (item: PdfToPptBatchFileItem) => {
-    setEditingId(item.id);
-    setEditingName(item.customName.replace(/\.pptx$/i, ''));
-  };
-
-  const handleSaveRename = (id: string) => {
-    if (editingName.trim()) {
-      const sanitized = sanitizePptxFilename(editingName.trim());
-      setFileList((prev) =>
-        prev.map((f) => (f.id === id ? { ...f, customName: sanitized } : f))
-      );
-    }
-    setEditingId(null);
-  };
-
   const completedCount = fileList.filter((f) => f.status === 'completed').length;
   const waitingCount = fileList.filter((f) => f.status === 'waiting').length;
-  const hasProcessing = fileList.some((f) => f.status === 'processing');
+  const totalSlides = activeItem?.pageCount || 0;
+  const selectedSlideCount =
+    activeItem?.selectedPages && activeItem.selectedPages.length > 0
+      ? activeItem.selectedPages.length
+      : totalSlides;
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-4">
-      {/* Upload & Workspace Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden transition-all">
-        {/* Top Workspace Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
-              <Presentation className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-slate-800 tracking-tight block">
-                Conversor PDF a PowerPoint
-              </span>
-              <span className="text-[11px] text-slate-500">
-                Formato PPTX OpenXML • Microsoft PowerPoint / Google Slides
-              </span>
+    <div className="w-full max-w-4xl mx-auto">
+      {/* Main SaaS Workspace Card */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden transition-all">
+        
+        {/* Floating Quick Action Dock */}
+        <div className="border-b border-slate-200/80 bg-slate-50/70 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+          {/* Mode Switcher */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline">
+              Modo:
+            </span>
+            <div className="inline-flex rounded-lg bg-slate-200/60 p-0.5 border border-slate-200/90">
+              <button
+                type="button"
+                onClick={() => setGlobalMode('editable')}
+                className={`px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                  globalMode === 'editable'
+                    ? 'bg-white text-blue-600 shadow-2xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                <span>Editable</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setGlobalMode('fidelity')}
+                className={`px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                  globalMode === 'fidelity'
+                    ? 'bg-white text-purple-600 shadow-2xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Eye className="w-3.5 h-3.5 text-purple-600" />
+                <span>Alta Fidelidad</span>
+              </button>
             </div>
           </div>
 
-          {/* Quick Settings Toggle */}
-          <button
-            type="button"
-            onClick={() => setShowSettings(!showSettings)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 ${
-              showSettings
-                ? 'bg-blue-50 border-blue-200 text-blue-700'
-                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-            }`}
-          >
-            <Settings2 className="w-3.5 h-3.5" />
-            <span>Opciones de Conversión</span>
-            <span className="px-1.5 py-0.2 bg-slate-200/60 rounded text-[10px] uppercase font-mono">
-              {globalMode === 'editable' ? 'Editable' : 'Fidelidad'}
-            </span>
-          </button>
+          {/* Orientation & Quick Toggles */}
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-lg bg-slate-200/60 p-0.5 border border-slate-200/90 text-xs">
+              <button
+                type="button"
+                onClick={() => setOrientation('auto')}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                  orientation === 'auto' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-600'
+                }`}
+              >
+                Auto
+              </button>
+              <button
+                type="button"
+                onClick={() => setOrientation('landscape')}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                  orientation === 'landscape' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-600'
+                }`}
+              >
+                16:9
+              </button>
+              <button
+                type="button"
+                onClick={() => setOrientation('portrait')}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                  orientation === 'portrait' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-600'
+                }`}
+              >
+                4:3 / A4
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowSettings(!showSettings)}
+              className={`p-1.5 rounded-lg border text-slate-600 transition-colors ${
+                showSettings ? 'bg-slate-100 border-slate-300 text-slate-900' : 'border-slate-200 hover:bg-slate-100'
+              }`}
+              title="Configuración avanzada"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
-        {/* Expandable Settings Drawer */}
+        {/* Expandable Advanced Options Drawer */}
         {showSettings && (
-          <div className="px-6 py-4 bg-slate-50/90 border-b border-slate-200/80 animate-in slide-in-from-top-2 duration-150">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-xs">
-              {/* Option 1: Mode */}
-              <div className="space-y-2">
-                <label className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Modo de Reconstrucción</span>
-                </label>
-                <div className="space-y-1.5">
-                  <label className="flex items-start gap-2 p-2 rounded-lg bg-white border border-slate-200 cursor-pointer hover:border-blue-400 transition-colors">
-                    <input
-                      type="radio"
-                      name="globalMode"
-                      value="editable"
-                      checked={globalMode === 'editable'}
-                      onChange={() => setGlobalMode('editable')}
-                      className="mt-0.5 text-blue-600 focus:ring-blue-500"
-                    />
-                    <div>
-                      <span className="font-semibold text-slate-800 block">Modo Editable</span>
-                      <span className="text-[11px] text-slate-500 block leading-tight">
-                        Cajas de texto, tablas e imágenes separadas editables en PowerPoint.
-                      </span>
-                    </div>
-                  </label>
-
-                  <label className="flex items-start gap-2 p-2 rounded-lg bg-white border border-slate-200 cursor-pointer hover:border-blue-400 transition-colors">
-                    <input
-                      type="radio"
-                      name="globalMode"
-                      value="fidelity"
-                      checked={globalMode === 'fidelity'}
-                      onChange={() => setGlobalMode('fidelity')}
-                      className="mt-0.5 text-blue-600 focus:ring-blue-500"
-                    />
-                    <div>
-                      <span className="font-semibold text-slate-800 block">Alta Fidelidad</span>
-                      <span className="text-[11px] text-slate-500 block leading-tight">
-                        Preserva 1:1 el diseño visual exacto y maquetación compleja.
-                      </span>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Option 2: Page Selection */}
-              <div className="space-y-2">
+          <div className="px-6 py-4 bg-slate-50 border-b border-slate-200/80 animate-in slide-in-from-top-1 duration-150">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-1.5">
                 <label className="font-bold text-slate-800 flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Selección de Diapositivas</span>
+                  <span>Rango numérico de diapositivas</span>
                 </label>
-                <div className="space-y-1.5">
-                  <label className="flex items-center gap-2 p-2 rounded-lg bg-white border border-slate-200 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="rangeType"
-                      value="all"
-                      checked={rangeType === 'all'}
-                      onChange={() => {
-                        setRangeType('all');
-                        setGlobalPageRange('');
-                      }}
-                      className="text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="font-semibold text-slate-800">Todas las páginas</span>
-                  </label>
-
-                  <label className="flex items-start gap-2 p-2 rounded-lg bg-white border border-slate-200 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="rangeType"
-                      value="custom"
-                      checked={rangeType === 'custom'}
-                      onChange={() => setRangeType('custom')}
-                      className="mt-0.5 text-blue-600 focus:ring-blue-500"
-                    />
-                    <div className="w-full">
-                      <span className="font-semibold text-slate-800 block">Rango personalizado</span>
-                      {rangeType === 'custom' && (
-                        <input
-                          type="text"
-                          placeholder="Ej: 1-5, 8, 12-15"
-                          value={globalPageRange}
-                          onChange={(e) => setGlobalPageRange(e.target.value)}
-                          className="mt-1.5 w-full px-2.5 py-1 text-xs border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        />
-                      )}
-                    </div>
-                  </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Ej: 1-5, 8, 12-15 (vacío para todas)"
+                    value={globalPageRange}
+                    onChange={(e) => setGlobalPageRange(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  {globalPageRange && (
+                    <button
+                      type="button"
+                      onClick={() => setGlobalPageRange('')}
+                      className="px-2 py-1 text-slate-400 hover:text-slate-700"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
+                <p className="text-[11px] text-slate-500">
+                  Puedes ingresar números separados por comas o guiones.
+                </p>
               </div>
 
-              {/* Option 3: Slide Orientation */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Proporción de Diapositiva</span>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Diferencia entre modos</span>
                 </label>
-                <div className="space-y-1.5">
-                  <label className="flex items-center gap-2 p-2 rounded-lg bg-white border border-slate-200 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="orientation"
-                      value="auto"
-                      checked={orientation === 'auto'}
-                      onChange={() => setOrientation('auto')}
-                      className="text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="font-semibold text-slate-800">Automático (según PDF)</span>
-                  </label>
-                  <label className="flex items-center gap-2 p-2 rounded-lg bg-white border border-slate-200 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="orientation"
-                      value="landscape"
-                      checked={orientation === 'landscape'}
-                      onChange={() => setOrientation('landscape')}
-                      className="text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="font-semibold text-slate-800">Panorámica (16:9 / Horizontal)</span>
-                  </label>
-                  <label className="flex items-center gap-2 p-2 rounded-lg bg-white border border-slate-200 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="orientation"
-                      value="portrait"
-                      checked={orientation === 'portrait'}
-                      onChange={() => setOrientation('portrait')}
-                      className="text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="font-semibold text-slate-800">Vertical (A4 / Portada)</span>
-                  </label>
-                </div>
+                <p className="text-[11px] text-slate-600 leading-relaxed bg-white p-2.5 rounded-lg border border-slate-200">
+                  <strong>Editable:</strong> Cuadros de texto, tablas e imágenes separadas para modificar contenido libremente.<br />
+                  <strong>Alta Fidelidad:</strong> Preserva milimétricamente el diseño, fuentes complejas y diagramas exactos.
+                </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Drag & Drop Upload Zone */}
-        <div className="p-6">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileInputChange}
-            multiple
-            accept=".pdf,application/pdf"
-            className="hidden"
-          />
+        {/* ======================================================== */}
+        {/* 1. EMPTY STATE: CLEAN SAAS DRAG & DROP ZONE             */}
+        {/* ======================================================== */}
+        {fileList.length === 0 && (
+          <div className="p-6 sm:p-10">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileInputChange}
+              multiple
+              accept=".pdf,application/pdf"
+              className="hidden"
+            />
 
-          <div
-            onDragEnter={handleDragEnter}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-8 sm:p-12 text-center cursor-pointer transition-all ${
-              isDragging
-                ? 'border-blue-500 bg-blue-50/60 scale-[0.99]'
-                : 'border-slate-200/90 hover:border-blue-400 hover:bg-slate-50/60 bg-slate-50/20'
-            }`}
-          >
-            <div className="w-14 h-14 mx-auto mb-3.5 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-md">
-              <UploadCloud className="w-7 h-7" />
-            </div>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-              Arrastra tus documentos PDF aquí
-            </h2>
-            <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-sm mx-auto">
-              o haz clic para explorar tus archivos desde este dispositivo
-            </p>
+            <div
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-xl p-8 sm:p-12 text-center cursor-pointer transition-all ${
+                isDragging
+                  ? 'border-blue-500 bg-blue-50/50 scale-[0.995]'
+                  : 'border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/50 bg-slate-50/20'
+              }`}
+            >
+              <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-2xs">
+                <Presentation className="w-7 h-7 stroke-[1.75]" />
+              </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-[11px] font-medium text-slate-500">
-              <span className="px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200/80">
-                Archivos .PDF
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200/80">
-                Hasta 50 MB por archivo
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200/80">
-                Conversión por lotes
-              </span>
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                Arrastra tu archivo PDF aquí
+              </h2>
+              <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-sm mx-auto">
+                o haz clic para seleccionar tu documento desde este dispositivo
+              </p>
+
+              <div className="mt-5">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs sm:text-sm rounded-lg shadow-2xs transition-all inline-flex items-center gap-2"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Seleccionar archivo PDF</span>
+                </button>
+              </div>
+
+              <div className="mt-6 pt-5 border-t border-slate-200/70 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-slate-500">
+                <span className="flex items-center gap-1">
+                  <FileCheck className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Documentos PDF</span>
+                </span>
+                <span>•</span>
+                <span>Hasta 50 MB por archivo</span>
+                <span>•</span>
+                <span className="text-emerald-700 font-semibold">100% Gratis y Confidencial</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Global Error Banner */}
         {globalError && (
-          <div className="mx-6 mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between">
+          <div className="mx-6 mt-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
               <span>{globalError}</span>
@@ -809,249 +895,393 @@ export default function PdfToPptConverter() {
           </div>
         )}
 
-        {/* File Queue List */}
-        {fileList.length > 0 && (
-          <div className="px-6 pb-6 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-800">
-                  Documentos en cola ({fileList.length})
-                </span>
-                {completedCount > 0 && (
-                  <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-100 text-emerald-800">
-                    {completedCount} completado{completedCount > 1 ? 's' : ''}
-                  </span>
-                )}
+        {/* ======================================================== */}
+        {/* 2. FILE LOADED: INTERACTIVE SLIDE WORKSPACE              */}
+        {/* ======================================================== */}
+        {fileList.length > 0 && activeItem && (
+          <div className="p-4 sm:p-6 space-y-5">
+            {/* Active Document Header */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 flex items-center justify-center shrink-0">
+                  <Presentation className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  {editingId === activeItem.id ? (
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSaveRename(activeItem.id)}
+                        className="px-2 py-0.5 text-xs font-semibold rounded border border-blue-400 focus:outline-none"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleSaveRename(activeItem.id)}
+                        className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="text-sm font-bold text-slate-900 truncate max-w-xs sm:max-w-md">
+                        {activeItem.result ? activeItem.result.convertedName : activeItem.name}
+                      </h3>
+                      {!activeItem.result && activeItem.status !== 'processing' && (
+                        <button
+                          type="button"
+                          onClick={() => handleStartRename(activeItem)}
+                          className="text-slate-400 hover:text-blue-600 p-0.5"
+                          title="Cambiar nombre de salida"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 mt-0.5">
+                    <span>{formatBytes(activeItem.size)}</span>
+                    <span>•</span>
+                    <span className="font-medium text-slate-700">
+                      {totalSlides > 0 ? `${totalSlides} diapositivas` : 'Cargando diapositivas...'}
+                    </span>
+                    {activeItem.result && (
+                      <>
+                        <span>•</span>
+                        <span className="text-emerald-700 font-bold">
+                          PPTX: {formatBytes(activeItem.result.pptxSize)}
+                        </span>
+                        <span>•</span>
+                        <span>{formatTime(activeItem.result.conversionTimeMs)}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 shrink-0">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileInputChange}
+                  multiple
+                  accept=".pdf,application/pdf"
+                  className="hidden"
+                />
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-2.5 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50 rounded-md transition-colors flex items-center gap-1"
+                  className="px-2.5 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50 border border-blue-200/70 rounded-lg transition-colors flex items-center gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Añadir más</span>
+                  <span>Añadir otro</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="px-2 py-1 text-xs text-slate-400 hover:text-rose-600 transition-colors"
-                  title="Limpiar lista"
+                  className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors"
+                  title="Eliminar archivos"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            <div className="space-y-2.5">
-              {fileList.map((item) => {
-                const isCompleted = item.status === 'completed';
-                const isProcessing = item.status === 'processing';
-                const isFailed = item.status === 'failed';
-                const isEditing = editingId === item.id;
-
-                return (
-                  <div
-                    key={item.id}
-                    className={`p-4 rounded-xl border transition-all ${
-                      isCompleted
-                        ? 'border-emerald-200 bg-emerald-50/30'
-                        : isFailed
-                        ? 'border-rose-200 bg-rose-50/20'
-                        : isProcessing
-                        ? 'border-blue-200 bg-blue-50/30'
-                        : 'border-slate-200 bg-white'
+            {/* Multiple files selector tabs if more than 1 file */}
+            {fileList.length > 1 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-100">
+                {fileList.map((fileItem, idx) => (
+                  <button
+                    key={fileItem.id}
+                    type="button"
+                    onClick={() => setActiveFileIndex(idx)}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg shrink-0 flex items-center gap-1.5 transition-colors ${
+                      activeFileIndex === idx
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      {/* File Icon & Info */}
-                      <div className="flex items-start gap-3 min-w-0">
-                        <div
-                          className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                            isCompleted
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : isFailed
-                              ? 'bg-rose-100 text-rose-700'
-                              : isProcessing
-                              ? 'bg-blue-100 text-blue-700 animate-pulse'
-                              : 'bg-amber-100 text-amber-700'
-                          }`}
-                        >
-                          <Presentation className="w-4.5 h-4.5" />
-                        </div>
+                    <span className="truncate max-w-[140px]">{fileItem.name}</span>
+                    {fileItem.status === 'completed' && (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
 
-                        <div className="min-w-0">
-                          {isEditing ? (
-                            <div className="flex items-center gap-2 mb-1">
-                              <input
-                                type="text"
-                                value={editingName}
-                                onChange={(e) => setEditingName(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSaveRename(item.id)}
-                                className="px-2 py-0.5 text-xs font-semibold rounded border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                autoFocus
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleSaveRename(item.id)}
-                                className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
-                              >
-                                <Check className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
+            {/* ======================================================== */}
+            {/* 3. INTERACTIVE SLIDE THUMBNAIL CANVAS WORKSPACE         */}
+            {/* ======================================================== */}
+            {!activeItem.result && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-800">
+                      Vista previa de diapositivas
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-mono text-slate-600">
+                      {selectedSlideCount} de {totalSlides || '...'} seleccionadas
+                    </span>
+                  </div>
+
+                  {totalSlides > 1 && (
+                    <div className="flex items-center gap-2 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => handleSelectAllSlides(activeItem.id, true)}
+                        className="text-slate-500 hover:text-blue-600 font-medium text-[11px]"
+                      >
+                        Todas
+                      </button>
+                      <span className="text-slate-300">•</span>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectAllSlides(activeItem.id, false)}
+                        className="text-slate-500 hover:text-blue-600 font-medium text-[11px]"
+                      >
+                        Ninguna
+                      </button>
+                      <span className="text-slate-300">•</span>
+                      <button
+                        type="button"
+                        onClick={() => handleInvertSlideSelection(activeItem.id)}
+                        className="text-slate-500 hover:text-blue-600 font-medium text-[11px]"
+                      >
+                        Invertir
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Mobile Horizontal Swipe Carousel */}
+                <div className="flex sm:hidden overflow-x-auto pb-3 gap-3 snap-x snap-mandatory scrollbar-none -mx-4 px-4">
+                  {Array.from({ length: totalSlides || 4 }, (_, i) => i + 1).map((pageNum) => {
+                    const isSelected =
+                      !activeItem.selectedPages ||
+                      activeItem.selectedPages.length === 0 ||
+                      activeItem.selectedPages.includes(pageNum);
+                    const thumbUrl = activeItem.thumbnails?.[pageNum];
+
+                    return (
+                      <div
+                        key={pageNum}
+                        onClick={() => totalSlides > 0 && handleToggleSlide(activeItem.id, pageNum)}
+                        className={`snap-center shrink-0 w-44 rounded-xl border p-2 cursor-pointer transition-all ${
+                          isSelected
+                            ? 'border-blue-500 bg-blue-50/30 ring-1 ring-blue-500/20'
+                            : 'border-slate-200 bg-slate-50/50 opacity-50'
+                        }`}
+                      >
+                        <div className="relative aspect-4/3 rounded-lg bg-slate-100 overflow-hidden border border-slate-200/80 flex items-center justify-center">
+                          {thumbUrl ? (
+                            <img
+                              src={thumbUrl}
+                              alt={`Diapositiva ${pageNum}`}
+                              className="w-full h-full object-contain bg-white"
+                            />
                           ) : (
-                            <div className="flex items-center gap-1.5 mb-0.5">
-                              <span className="text-xs sm:text-sm font-bold text-slate-900 truncate max-w-xs sm:max-w-md">
-                                {isCompleted && item.result
-                                  ? item.result.convertedName
-                                  : item.name}
-                              </span>
-                              {!isCompleted && !isProcessing && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleStartRename(item)}
-                                  className="text-slate-400 hover:text-blue-600 p-0.5"
-                                  title="Editar nombre final"
-                                >
-                                  <Edit2 className="w-3 h-3" />
-                                </button>
-                              )}
+                            <div className="flex flex-col items-center justify-center text-slate-400 p-2 text-center">
+                              <Loader2 className="w-5 h-5 animate-spin mb-1 text-slate-400" />
+                              <span className="text-[10px]">Cargando...</span>
                             </div>
                           )}
 
-                          <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
-                            <span>{formatBytes(item.size)}</span>
-                            {item.pageCount && (
-                              <>
-                                <span>•</span>
-                                <span>{item.pageCount} páginas</span>
-                              </>
-                            )}
-                            {item.result && (
-                              <>
-                                <span>•</span>
-                                <span className="font-semibold text-emerald-700">
-                                  PPTX: {formatBytes(item.result.pptxSize)}
-                                </span>
-                                <span>•</span>
-                                <span>{item.result.slideCount} diapositivas</span>
-                                <span>•</span>
-                                <span>{formatTime(item.result.conversionTimeMs)}</span>
-                              </>
+                          <div className="absolute top-1.5 right-1.5">
+                            {isSelected ? (
+                              <div className="w-4 h-4 rounded bg-blue-600 text-white flex items-center justify-center shadow-2xs">
+                                <Check className="w-3 h-3 stroke-[2.5]" />
+                              </div>
+                            ) : (
+                              <div className="w-4 h-4 rounded border border-slate-300 bg-white/90" />
                             )}
                           </div>
                         </div>
+
+                        <div className="mt-2 flex items-center justify-between text-[11px]">
+                          <span className="font-bold text-slate-800">Slide {pageNum}</span>
+                          <span className="text-slate-400 font-mono text-[10px]">16:9</span>
+                        </div>
                       </div>
+                    );
+                  })}
+                </div>
 
-                      {/* Status / Action Buttons */}
-                      <div className="flex items-center gap-2 shrink-0">
-                        {isCompleted && item.result && (
-                          <a
-                            href={item.result.downloadUrl}
-                            download={item.result.convertedName}
-                            className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition-colors flex items-center gap-1.5"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                            <span>Descargar PPTX</span>
-                          </a>
-                        )}
+                {/* Desktop Grid */}
+                <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 gap-3.5">
+                  {Array.from({ length: totalSlides || 4 }, (_, i) => i + 1).map((pageNum) => {
+                    const isSelected =
+                      !activeItem.selectedPages ||
+                      activeItem.selectedPages.length === 0 ||
+                      activeItem.selectedPages.includes(pageNum);
+                    const thumbUrl = activeItem.thumbnails?.[pageNum];
 
-                        {isProcessing && (
-                          <button
-                            type="button"
-                            onClick={() => handleCancelItem(item.id)}
-                            className="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-                          >
-                            Cancelar
-                          </button>
-                        )}
+                    return (
+                      <div
+                        key={pageNum}
+                        onClick={() => totalSlides > 0 && handleToggleSlide(activeItem.id, pageNum)}
+                        className={`group relative rounded-xl border p-2.5 cursor-pointer transition-all ${
+                          isSelected
+                            ? 'border-blue-500 bg-white shadow-2xs ring-1 ring-blue-500/20 hover:border-blue-600'
+                            : 'border-slate-200 bg-slate-50/50 opacity-40 hover:opacity-75'
+                        }`}
+                      >
+                        <div className="relative aspect-4/3 rounded-lg bg-white overflow-hidden border border-slate-200/90 flex items-center justify-center shadow-2xs">
+                          {thumbUrl ? (
+                            <img
+                              src={thumbUrl}
+                              alt={`Diapositiva ${pageNum}`}
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center justify-center text-slate-400 p-3 text-center">
+                              <Loader2 className="w-5 h-5 animate-spin mb-1 text-slate-400" />
+                              <span className="text-[10px]">Cargando vista previa...</span>
+                            </div>
+                          )}
 
-                        {isFailed && (
-                          <button
-                            type="button"
-                            onClick={() => handleRetryItem(item)}
-                            className="px-2.5 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1"
-                          >
-                            <RefreshCw className="w-3 h-3" />
-                            <span>Reintentar</span>
-                          </button>
-                        )}
+                          {/* Checkbox badge */}
+                          <div className="absolute top-2 right-2">
+                            {isSelected ? (
+                              <div className="w-5 h-5 rounded bg-blue-600 text-white flex items-center justify-center shadow-2xs">
+                                <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                              </div>
+                            ) : (
+                              <div className="w-5 h-5 rounded border border-slate-300 bg-white/90" />
+                            )}
+                          </div>
+                        </div>
 
-                        {!isProcessing && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveItem(item.id)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors"
-                            title="Eliminar de la lista"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Progress indicator during processing */}
-                    {isProcessing && (
-                      <div className="mt-3 space-y-1.5">
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="font-semibold text-blue-700 flex items-center gap-1.5">
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                            {item.currentStage || 'Procesando diapositivas...'}
+                        <div className="mt-2 flex items-center justify-between text-xs">
+                          <span className="font-semibold text-slate-800">Diapositiva {pageNum}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            {orientation === 'portrait' ? 'A4' : '16:9'}
                           </span>
-                          <span className="font-mono text-slate-500">{item.progress || 10}%</span>
-                        </div>
-                        <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                          <div
-                            className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                            style={{ width: `${item.progress || 10}%` }}
-                          />
                         </div>
                       </div>
-                    )}
-
-                    {/* Error message detail */}
-                    {isFailed && item.errorMessage && (
-                      <div className="mt-2 text-xs text-rose-600 flex items-center gap-1.5">
-                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>{item.errorMessage}</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Bottom Actions Toolbar */}
-            <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-              <div className="text-xs text-slate-500">
-                {waitingCount > 0
-                  ? `${waitingCount} archivo${waitingCount > 1 ? 's' : ''} pendiente${waitingCount > 1 ? 's' : ''} de conversión.`
-                  : 'Todos los documentos han sido procesados.'}
+                    );
+                  })}
+                </div>
               </div>
+            )}
 
-              <div className="flex items-center gap-2">
-                {completedCount > 1 && (
+            {/* In-Progress Conversion Indicator */}
+            {activeItem.status === 'processing' && (
+              <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200/80 space-y-2.5 animate-in fade-in">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-blue-700 flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>{activeItem.currentStage || 'Procesando presentación...'}</span>
+                  </span>
+                  <span className="font-mono font-bold text-blue-600">{activeItem.progress || 25}%</span>
+                </div>
+                <div className="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${activeItem.progress || 25}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {activeItem.status === 'failed' && activeItem.errorMessage && (
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                  <span>{activeItem.errorMessage}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRetryItem(activeItem)}
+                  className="px-2.5 py-1 text-xs font-semibold rounded bg-rose-100 hover:bg-rose-200 text-rose-800 flex items-center gap-1"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  <span>Reintentar</span>
+                </button>
+              </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* 4. SUCCESS / DOWNLOAD STATE                             */}
+            {/* ======================================================== */}
+            {activeItem.status === 'completed' && activeItem.result && (
+              <div className="p-6 rounded-xl bg-emerald-50/50 border border-emerald-200/90 space-y-4 animate-in fade-in">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                    <CheckCircle2 className="w-6 h-6 stroke-[2]" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      ¡Presentación PowerPoint Lista para Descargar!
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      Se han convertido {activeItem.result.slideCount} diapositivas con éxito en formato PPTX auténtico.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <a
+                    href={activeItem.result.downloadUrl}
+                    download={activeItem.result.convertedName}
+                    className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm rounded-xl shadow-xs transition-all flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4 stroke-[2.2]" />
+                    <span>Descargar PowerPoint (.pptx)</span>
+                  </a>
+
+                  {completedCount > 1 && (
+                    <button
+                      type="button"
+                      onClick={handleDownloadAllZip}
+                      disabled={isGeneratingZip}
+                      className="px-4 py-3 bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      {isGeneratingZip ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Archive className="w-3.5 h-3.5" />
+                      )}
+                      <span>Descargar todo (.ZIP)</span>
+                    </button>
+                  )}
+
                   <button
                     type="button"
-                    onClick={handleDownloadAllZip}
-                    disabled={isGeneratingZip}
-                    className="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-900 text-white shadow-2xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                    onClick={handleClearAll}
+                    className="px-4 py-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors"
                   >
-                    {isGeneratingZip ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Archive className="w-3.5 h-3.5" />
-                    )}
-                    <span>Descargar todos (.ZIP)</span>
+                    Convertir otro documento
                   </button>
-                )}
+                </div>
+              </div>
+            )}
 
-                {waitingCount > 0 && (
+            {/* Desktop Action Toolbar (When waiting to convert) */}
+            {activeItem.status !== 'completed' && (
+              <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                <div className="text-xs text-slate-500">
+                  <span>Modo: </span>
+                  <strong className="text-slate-800">
+                    {globalMode === 'editable' ? 'Editable (Texto y tablas)' : 'Alta Fidelidad (1:1)'}
+                  </strong>
+                  <span> • </span>
+                  <span>Proporción: </span>
+                  <strong className="text-slate-800 uppercase">{orientation}</strong>
+                </div>
+
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={handleConvertAll}
-                    disabled={isConvertingBatch}
-                    className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow transition-all flex items-center gap-2 disabled:opacity-50"
+                    disabled={isConvertingBatch || selectedSlideCount === 0}
+                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center gap-2 disabled:opacity-50"
                   >
                     {isConvertingBatch ? (
                       <>
@@ -1060,17 +1290,50 @@ export default function PdfToPptConverter() {
                       </>
                     ) : (
                       <>
-                        <span>Convertir a PPT</span>
+                        <span>Convertir a PPT ({selectedSlideCount} diapositivas)</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
-                )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* Sticky Bottom Mobile Bar */}
+      {fileList.length > 0 && activeItem && activeItem.status !== 'completed' && (
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 p-3 shadow-lg flex items-center justify-between gap-3 animate-in slide-in-from-bottom-2">
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-slate-900 truncate max-w-[170px]">
+              {activeItem.name}
+            </div>
+            <div className="text-[11px] text-slate-500">
+              {selectedSlideCount} diapositivas • {globalMode === 'editable' ? 'Editable' : 'Fidelidad'}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleConvertAll}
+            disabled={isConvertingBatch || selectedSlideCount === 0}
+            className="px-5 py-2.5 bg-blue-600 active:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 disabled:opacity-50 shrink-0"
+          >
+            {isConvertingBatch ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Convirtiendo...</span>
+              </>
+            ) : (
+              <>
+                <span>Convertir</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Password Modal */}
       {passwordTargetItem && (

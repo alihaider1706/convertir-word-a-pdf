@@ -385,7 +385,7 @@ export default function ComprimirPdfClientPage() {
 
         {/* Studio Workspace Container */}
         <section className="px-4 sm:px-6 max-w-4xl mx-auto pb-12">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
             {/* Top Area: Drag & Drop Upload Zone */}
             <div className="p-5 sm:p-6 border-b border-slate-200 bg-slate-50/50">
               <div
@@ -399,7 +399,7 @@ export default function ComprimirPdfClientPage() {
                 className={`border-2 border-dashed rounded-xl p-6 sm:p-8 text-center cursor-pointer transition-all ${
                   isDragOver
                     ? 'border-blue-500 bg-blue-50/60 scale-[0.99]'
-                    : 'border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50/80 shadow-2xs'
+                    : 'border-slate-200/90 hover:border-slate-300 bg-white hover:bg-slate-50/80 shadow-2xs'
                 }`}
               >
                 <input
@@ -414,18 +414,18 @@ export default function ComprimirPdfClientPage() {
                   className="hidden"
                 />
 
-                <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3 border border-blue-100 shadow-2xs">
-                  <Upload className="w-6 h-6" />
+                <div className="w-14 h-14 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3 border border-blue-100 shadow-2xs">
+                  <Upload className="w-7 h-7 stroke-[1.75]" />
                 </div>
 
-                <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
                   Arrastra y suelta tus archivos PDF aquí
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-sm mx-auto">
                   o haz clic para explorar en tu dispositivo (hasta 100 MB por archivo)
                 </p>
 
-                <div className="mt-4 flex items-center justify-center gap-4 text-[11px] text-slate-400">
+                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-center gap-4 text-xs text-slate-500">
                   <span className="flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                     Procesamiento privado
@@ -433,7 +433,7 @@ export default function ComprimirPdfClientPage() {
                   <span>•</span>
                   <span>Sin límites de archivos</span>
                   <span>•</span>
-                  <span>100% Gratuito</span>
+                  <span className="text-emerald-700 font-semibold">100% Gratuito</span>
                 </div>
               </div>
 

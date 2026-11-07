@@ -391,7 +391,7 @@ export default function PdfToWordConverterCard() {
     <section id="pdf-to-word-tool" className="py-2 sm:py-4 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Converter Main Container - Clean, minimal, purpose-built SaaS panel */}
-        <div className="bg-white rounded-lg border border-slate-200/90 shadow-2xs overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
           {/* Global Error Banner */}
           {globalError && (
             <div className="flex items-start justify-between gap-3 p-3.5 bg-rose-50 border-b border-rose-200 text-xs text-rose-800">
@@ -429,36 +429,45 @@ export default function PdfToWordConverterCard() {
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`p-8 sm:p-10 text-center cursor-pointer transition-all border border-dashed m-3 sm:m-4 rounded-lg flex flex-col items-center justify-center ${
+              className={`p-8 sm:p-12 text-center cursor-pointer transition-all border-2 border-dashed m-3 sm:m-6 rounded-xl flex flex-col items-center justify-center ${
                 isDragging
-                  ? 'border-blue-600 bg-blue-50/50'
-                  : 'border-slate-300 hover:border-blue-500 bg-white hover:bg-slate-50/50 shadow-2xs'
+                  ? 'border-blue-600 bg-blue-50/50 scale-[0.995]'
+                  : 'border-slate-200/90 hover:border-slate-300 bg-slate-50/20 hover:bg-slate-50/50'
               }`}
             >
               {/* Minimal Document Icon */}
-              <div className="w-10 h-10 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center mb-3 border border-slate-200/80">
-                <Upload className="w-5 h-5 text-slate-600" />
+              <div className="w-14 h-14 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mb-4 shadow-2xs">
+                <FileCheck className="w-7 h-7 stroke-[1.75]" />
               </div>
 
-              {/* Action Headline & Button */}
-              <button
-                type="button"
-                className="h-10 px-5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs sm:text-sm shadow-2xs transition-colors mb-2 inline-flex items-center gap-2"
-              >
-                <span>Seleccionar archivos PDF</span>
-              </button>
-
-              <p className="text-xs text-slate-500 font-normal">
-                o arrastra y suelta tus documentos en este espacio
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                Arrastra tus archivos PDF aquí
+              </h2>
+              <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-sm mx-auto">
+                o selecciona tus documentos desde este dispositivo
               </p>
 
+              {/* Action Headline & Button */}
+              <div className="mt-5">
+                <button
+                  type="button"
+                  className="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs sm:text-sm shadow-2xs transition-all inline-flex items-center gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Seleccionar archivos PDF</span>
+                </button>
+              </div>
+
               {/* Supported Specifications Note */}
-              <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-slate-400">
-                <span>PDF estándar hasta 50 MB</span>
+              <div className="mt-6 pt-5 border-t border-slate-200/70 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-slate-500">
+                <span className="flex items-center gap-1">
+                  <FileText className="w-3.5 h-3.5 text-blue-600" />
+                  <span>PDF estándar hasta 50 MB</span>
+                </span>
                 <span>•</span>
-                <span>Conversión múltiple simultánea</span>
+                <span>Múltiples archivos a la vez</span>
                 <span>•</span>
-                <span>OCR automático para escaneos</span>
+                <span className="text-emerald-700 font-semibold">100% Gratis y Confidencial</span>
               </div>
             </div>
           ) : (

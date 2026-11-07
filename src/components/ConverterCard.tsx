@@ -329,14 +329,14 @@ export default function ConverterCard({
 
   return (
     <section id="converter-tool" className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-12">
-      <div className="bg-white rounded-lg border border-slate-200/90 shadow-2xs p-5 sm:p-8 transition-all">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-6 sm:p-8 transition-all">
         {/* Main Heading & Description */}
         <div className="text-center max-w-2xl mx-auto mb-6">
           <h1 className="text-2xl sm:text-[32px] font-bold text-slate-900 tracking-tight leading-tight">
             Convertir Word a PDF
           </h1>
           <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto">
-            Convierte tus documentos DOC y DOCX a PDF online de forma rápida y sencilla.
+            Convierte tus documentos DOC y DOCX a PDF online de forma rápida y sencilla con calidad profesional.
           </p>
         </div>
 
@@ -362,17 +362,17 @@ export default function ConverterCard({
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`border border-dashed rounded-lg p-8 sm:p-12 text-center cursor-pointer transition-colors ${
+              className={`border-2 border-dashed rounded-xl p-8 sm:p-12 text-center cursor-pointer transition-all ${
                 isDragging
-                  ? 'border-blue-600 bg-blue-50/50'
-                  : 'border-slate-300 hover:border-slate-400 bg-slate-50/40 hover:bg-slate-50/80'
+                  ? 'border-blue-600 bg-blue-50/50 scale-[0.995]'
+                  : 'border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/50 bg-slate-50/20'
               }`}
             >
-              <div className="mx-auto w-14 h-14 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mb-4">
+              <div className="mx-auto w-14 h-14 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mb-4 shadow-2xs">
                 <FileText className="w-7 h-7 stroke-[1.75]" />
               </div>
 
-              <h2 className="text-base sm:text-lg font-semibold text-slate-900">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
                 Arrastra tu archivo Word aquí
               </h2>
               <p className="mt-1 text-sm text-slate-500">
@@ -386,7 +386,7 @@ export default function ConverterCard({
                     e.stopPropagation();
                     fileInputRef.current?.click();
                   }}
-                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-sm rounded-md shadow-xs transition-colors inline-flex items-center gap-2"
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs sm:text-sm rounded-lg shadow-2xs transition-all inline-flex items-center gap-2"
                 >
                   <Upload className="w-4 h-4" />
                   <span>Seleccionar archivo</span>
@@ -394,11 +394,11 @@ export default function ConverterCard({
               </div>
 
               <div className="mt-6 pt-5 border-t border-slate-200/80 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs text-slate-500">
-                <span>Formatos compatibles: <strong>DOC y DOCX</strong> (Soporta múltiples archivos)</span>
+                <span>Formatos compatibles: <strong>DOC y DOCX</strong> (Múltiples archivos)</span>
                 <span>•</span>
-                <span>Tamaño máximo: <strong>50 MB</strong></span>
+                <span>Hasta <strong>50 MB</strong></span>
                 <span>•</span>
-                <span className="text-emerald-700 font-medium">100% Gratis</span>
+                <span className="text-emerald-700 font-semibold">100% Gratis y Confidencial</span>
               </div>
             </div>
 

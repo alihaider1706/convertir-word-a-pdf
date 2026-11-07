@@ -347,7 +347,7 @@ export default function JpgToPdfConverter() {
       />
 
       {/* Main SaaS Card Workspace */}
-      <div className="bg-white rounded-lg border border-slate-200/90 shadow-2xs overflow-hidden transition-all duration-200">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden transition-all duration-200">
         {/* Error Notification */}
         {errorMsg && (
           <div className="p-3 bg-red-50 border-b border-red-100 flex items-center justify-between text-xs text-red-700 animate-in fade-in">
@@ -376,38 +376,42 @@ export default function JpgToPdfConverter() {
             onDragLeave={() => setIsDragOver(false)}
             onDrop={handleFileDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`p-8 sm:p-10 text-center cursor-pointer transition-all border border-dashed m-3 sm:m-4 rounded-lg flex flex-col items-center justify-center ${
+            className={`p-8 sm:p-12 text-center cursor-pointer transition-all border-2 border-dashed m-3 sm:m-6 rounded-xl flex flex-col items-center justify-center ${
               isDragOver
-                ? 'border-blue-600 bg-blue-50/50'
-                : 'border-slate-300 hover:border-blue-500 bg-white hover:bg-slate-50/50 shadow-2xs'
+                ? 'border-blue-600 bg-blue-50/50 scale-[0.995]'
+                : 'border-slate-200/90 hover:border-slate-300 bg-slate-50/20 hover:bg-slate-50/50'
             }`}
           >
-            <div className="max-w-md mx-auto space-y-3">
-              <div className="w-10 h-10 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center mx-auto border border-slate-200/80">
-                <UploadCloud className="w-5 h-5 text-slate-600" />
+            <div className="max-w-md mx-auto space-y-4">
+              <div className="w-14 h-14 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mx-auto shadow-2xs">
+                <UploadCloud className="w-7 h-7 stroke-[1.75]" />
               </div>
 
               <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight mb-1">
+                  Arrastra tus imágenes aquí
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 font-normal mb-4">
+                  o selecciona tus fotos desde este dispositivo para unirlas en PDF
+                </p>
+
                 <button
                   type="button"
-                  className="h-10 px-5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs sm:text-sm shadow-2xs transition-colors mb-2 inline-flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs sm:text-sm shadow-2xs transition-all inline-flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Seleccionar imágenes JPG</span>
                 </button>
-                <p className="text-xs text-slate-500 font-normal">
-                  o arrastra y suelta tus fotografías en este espacio
-                </p>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-center gap-3 text-xs text-slate-400">
+              <div className="pt-4 border-t border-slate-200/70 flex items-center justify-center gap-3 text-xs text-slate-500">
                 <span>JPG / JPEG</span>
                 <span>•</span>
                 <span>PNG</span>
                 <span>•</span>
                 <span>WebP</span>
                 <span>•</span>
-                <span>Hasta 100 MB</span>
+                <span className="text-emerald-700 font-semibold">100% Gratis</span>
               </div>
             </div>
           </div>
