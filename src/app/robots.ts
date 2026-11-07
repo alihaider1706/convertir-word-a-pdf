@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/api/'],
     },
-    sitemap: 'https://convertirwordapdf.org/sitemap.xml',
+    sitemap: 'https://convertirwordapdf.net/sitemap.xml',
   };
 }

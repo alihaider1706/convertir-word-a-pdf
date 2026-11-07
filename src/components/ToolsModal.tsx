@@ -22,7 +22,7 @@ interface ToolsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectWordToPdf?: () => void;
-  activeTool?: 'word-to-pdf' | 'pdf-to-word' | 'jpg-to-pdf' | 'pdf-to-jpg' | 'comprimir-pdf';
+  activeTool?: 'word-to-pdf' | 'pdf-to-word' | 'jpg-to-pdf' | 'pdf-to-jpg' | 'comprimir-pdf' | 'pdf-to-ppt';
 }
 
 type ToolCategory = 'all' | 'to-pdf' | 'from-pdf' | 'security';
@@ -55,6 +55,7 @@ export default function ToolsModal({
   const isJpgActive = activeTool === 'jpg-to-pdf';
   const isPdfToJpgActive = activeTool === 'pdf-to-jpg';
   const isCompressPdfActive = activeTool === 'comprimir-pdf';
+  const isPdfToPptActive = activeTool === 'pdf-to-ppt';
 
   const allTools = [
     {
@@ -116,6 +117,21 @@ export default function ToolsModal({
         onClose();
         if (!isPdfToJpgActive) {
           router.push('/convertir-pdf-a-jpg/');
+        }
+      },
+    },
+    {
+      id: 'pdf-to-ppt',
+      name: 'PDF a PowerPoint',
+      description: 'Convierte documentos PDF en diapositivas PowerPoint (.pptx) editables.',
+      icon: Presentation,
+      category: 'from-pdf',
+      isCurrent: isPdfToPptActive,
+      badge: isPdfToPptActive ? 'En uso' : 'Disponible',
+      onClick: () => {
+        onClose();
+        if (!isPdfToPptActive) {
+          router.push('/convertir-pdf-a-ppt/');
         }
       },
     },

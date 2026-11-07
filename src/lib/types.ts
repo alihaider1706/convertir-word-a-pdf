@@ -157,3 +157,39 @@ export interface PdfBatchFileItem {
   };
 }
 
+// PDF to PowerPoint specific types
+export type PdfToPptMode = 'editable' | 'fidelity';
+
+export interface PdfToPptConversionResult {
+  id: string;
+  originalName: string;
+  convertedName: string;
+  originalSize: number;
+  pptxSize: number;
+  downloadUrl: string;
+  conversionTimeMs: number;
+  slideCount: number;
+  createdAt: string;
+  mode: PdfToPptMode;
+  isEncrypted?: boolean;
+}
+
+export interface PdfToPptBatchFileItem {
+  id: string;
+  file: File;
+  name: string;
+  customName: string;
+  size: number;
+  status: FileConversionState;
+  progress?: number;
+  currentStage?: string;
+  errorMessage?: string;
+  result?: PdfToPptConversionResult;
+  pageCount?: number;
+  password?: string;
+  requiresPassword?: boolean;
+  mode?: PdfToPptMode;
+  pageRange?: string;
+  orientation?: 'auto' | 'landscape' | 'portrait';
+}
+

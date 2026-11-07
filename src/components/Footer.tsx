@@ -106,6 +106,14 @@ export default function Footer({
                 </Link>
               </li>
               <li>
+                <Link
+                  href="/convertir-pdf-a-ppt/"
+                  className="hover:text-blue-600 transition-colors block"
+                >
+                  PDF a PowerPoint (.pptx)
+                </Link>
+              </li>
+              <li>
                 <button
                   type="button"
                   onClick={onOpenTools}

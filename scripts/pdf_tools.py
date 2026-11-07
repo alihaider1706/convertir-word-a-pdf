@@ -364,6 +364,201 @@ def extract_text(input_path, output_json_path):
         json.dump(pages_data, f, ensure_ascii=False)
     print(f"EXTRACT_SUCCESS:{len(pages_data)}")
 
+def parse_page_range(range_str, total_pages):
+    if not range_str or str(range_str).strip().lower() in ('all', '', '*', 'null', 'undefined'):
+        return list(range(1, total_pages + 1))
+    pages = set()
+    parts = [p.strip() for p in str(range_str).split(',') if p.strip()]
+    for part in parts:
+        if '-' in part:
+            subparts = part.split('-')
+            if len(subparts) == 2 and subparts[0].isdigit() and subparts[1].isdigit():
+                start = max(1, int(subparts[0]))
+                end = min(total_pages, int(subparts[1]))
+                if start <= end:
+                    for p in range(start, end + 1):
+                        pages.add(p)
+        elif part.isdigit():
+            p = int(part)
+            if 1 <= p <= total_pages:
+                pages.add(p)
+    sorted_pages = sorted(list(pages))
+    if not sorted_pages:
+        return list(range(1, total_pages + 1))
+    return sorted_pages
+
+def extract_for_ppt(input_path, output_json_path, options_json_str="{}"):
+    import uuid
+    import pymupdf
+
+    opts = json.loads(options_json_str) if isinstance(options_json_str, str) else (options_json_str or {})
+    mode = opts.get('mode', 'editable') # 'editable' or 'fidelity'
+    password = opts.get('password')
+    page_range_str = opts.get('page_range')
+
+    doc = pymupdf.open(input_path)
+    if doc.is_encrypted:
+        if not password:
+            raise ValueError("FILE_IS_ENCRYPTED_PASSWORD_REQUIRED")
+        if not doc.authenticate(password):
+            raise ValueError("INVALID_PASSWORD")
+
+    total_pages = len(doc)
+    selected_pages = parse_page_range(page_range_str, total_pages)
+
+    out_dir = os.path.dirname(output_json_path)
+    assets_dir = os.path.join(out_dir, f"ppt_assets_{uuid.uuid4().hex[:8]}")
+    os.makedirs(assets_dir, exist_ok=True)
+
+    slides = []
+
+    for page_num in selected_pages:
+        page_idx = page_num - 1
+        page = doc[page_idx]
+        rect = page.rect
+        width_pt = float(rect.width)
+        height_pt = float(rect.height)
+        is_landscape = width_pt >= height_pt
+
+        bg_img_path = None
+        if mode == 'fidelity':
+            pix = page.get_pixmap(dpi=150)
+            bg_img_path = os.path.join(assets_dir, f"slide_bg_{page_num}.png")
+            pix.save(bg_img_path)
+
+        text_blocks = []
+        text_dict = page.get_text("dict")
+        raw_blocks = text_dict.get("blocks", [])
+
+        total_text_length = 0
+
+        for b in raw_blocks:
+            if b.get("type") == 0 and "lines" in b: # Text block
+                block_lines = []
+                block_text = ""
+                for line in b["lines"]:
+                    line_spans = []
+                    for span in line.get("spans", []):
+                        s_text = span.get("text", "")
+                        if not s_text:
+                            continue
+                        block_text += s_text
+                        total_text_length += len(s_text.strip())
+
+                        raw_color = span.get("color", 0)
+                        if isinstance(raw_color, int):
+                            r = (raw_color >> 16) & 255
+                            g = (raw_color >> 8) & 255
+                            b_val = raw_color & 255
+                            hex_color = f"{r:02X}{g:02X}{b_val:02X}"
+                        else:
+                            hex_color = "1E293B"
+
+                        flags = span.get("flags", 0)
+                        font_name = str(span.get("font", "")).lower()
+                        is_bold = bool((flags & 2) or "bold" in font_name or "black" in font_name or "heavy" in font_name or "semibold" in font_name)
+                        is_italic = bool((flags & 4) or "italic" in font_name or "oblique" in font_name)
+
+                        line_spans.append({
+                            "text": s_text,
+                            "size": round(float(span.get("size", 11)), 1),
+                            "font": span.get("font", "Arial"),
+                            "color": hex_color,
+                            "isBold": is_bold,
+                            "isItalic": is_italic,
+                            "bbox": [round(float(x), 2) for x in span.get("bbox", [0, 0, 0, 0])]
+                        })
+
+                    if line_spans:
+                        block_lines.append({
+                            "spans": line_spans,
+                            "bbox": [round(float(x), 2) for x in line.get("bbox", [0, 0, 0, 0])]
+                        })
+
+                if block_lines:
+                    b_box = [round(float(x), 2) for x in b.get("bbox", [0, 0, 0, 0])]
+                    text_blocks.append({
+                        "bbox": b_box,
+                        "lines": block_lines,
+                        "fullText": block_text
+                    })
+
+        tables_data = []
+        try:
+            tabs = page.find_tables()
+            for tab in tabs:
+                extracted_rows = tab.extract()
+                if extracted_rows and len(extracted_rows) > 0:
+                    clean_rows = []
+                    for row in extracted_rows:
+                        clean_rows.append([str(c or "") for c in row])
+                    tables_data.append({
+                        "bbox": [round(float(x), 2) for x in tab.bbox],
+                        "rows": clean_rows
+                    })
+        except Exception:
+            pass
+
+        images_data = []
+        if mode == 'editable':
+            try:
+                img_infos = page.get_image_info(xrefs=True)
+                seen_xrefs = set()
+                for idx_img, img_info in enumerate(img_infos):
+                    xref = img_info.get("xref")
+                    bbox = img_info.get("bbox")
+                    if not bbox or (xref and xref in seen_xrefs):
+                        continue
+                    if xref:
+                        seen_xrefs.add(xref)
+                    try:
+                        base_img = doc.extract_image(xref) if xref else None
+                        if base_img and "image" in base_img:
+                            img_ext = base_img.get("ext", "png")
+                            img_filename = f"img_p{page_num}_{idx_img}.{img_ext}"
+                            img_full_path = os.path.join(assets_dir, img_filename)
+                            with open(img_full_path, "wb") as f_img:
+                                f_img.write(base_img["image"])
+                            images_data.append({
+                                "bbox": [round(float(x), 2) for x in bbox],
+                                "path": img_full_path
+                            })
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+
+        is_scanned = (total_text_length < 25 and len(images_data) == 0 and len(tables_data) == 0)
+        if is_scanned and not bg_img_path:
+            pix = page.get_pixmap(dpi=150)
+            bg_img_path = os.path.join(assets_dir, f"scanned_bg_{page_num}.png")
+            pix.save(bg_img_path)
+
+        slides.append({
+            "pageNumber": page_num,
+            "widthPt": round(width_pt, 2),
+            "heightPt": round(height_pt, 2),
+            "isLandscape": is_landscape,
+            "isScanned": is_scanned,
+            "bgImagePath": bg_img_path,
+            "textBlocks": text_blocks,
+            "tables": tables_data,
+            "images": images_data
+        })
+
+    result = {
+        "totalPages": total_pages,
+        "selectedPagesCount": len(slides),
+        "mode": mode,
+        "assetsDir": assets_dir,
+        "slides": slides
+    }
+
+    with open(output_json_path, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False)
+
+    print(f"EXTRACT_PPT_SUCCESS:{len(slides)}")
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Usage: python pdf_tools.py <command> [args...]")
@@ -410,6 +605,11 @@ if __name__ == "__main__":
             input_path = sys.argv[2]
             output_path = sys.argv[3]
             extract_text(input_path, output_path)
+        elif cmd == "extract_for_ppt":
+            input_path = sys.argv[2]
+            output_path = sys.argv[3]
+            opts_json = sys.argv[4] if len(sys.argv) > 4 else "{}"
+            extract_for_ppt(input_path, output_path, opts_json)
         else:
             print(f"Unknown command: {cmd}", file=sys.stderr)
             sys.exit(1)

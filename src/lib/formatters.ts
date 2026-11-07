@@ -58,6 +58,39 @@ export function getDocxFilename(originalFilename: string): string {
   return sanitizeDocxFilename(`${baseName}.docx`);
 }
 
+export function getPptxFilename(originalFilename: string): string {
+  const lastDot = originalFilename.lastIndexOf('.');
+  const baseName = lastDot !== -1 ? originalFilename.substring(0, lastDot) : originalFilename;
+  return sanitizePptxFilename(`${baseName}.pptx`);
+}
+
+/**
+ * Sanitizes and normalizes user-provided PPTX filenames:
+ * - Strips illegal filesystem characters (\ / : * ? " < > | \0)
+ * - Preserves Unicode/accents (e.g. á, é, í, ó, ú, ñ)
+ * - Removes repeated or trailing .pptx / .ppt extensions to avoid double extensions
+ * - Always ensures a single ".pptx" extension at the end
+ */
+export function sanitizePptxFilename(inputName: string): string {
+  let cleaned = (inputName || 'presentacion')
+    .trim()
+    .replace(/[/\\:*?"<>|\x00-\x1F]/g, '_');
+
+  while (cleaned.toLowerCase().endsWith('.pptx') || cleaned.toLowerCase().endsWith('.ppt')) {
+    if (cleaned.toLowerCase().endsWith('.pptx')) {
+      cleaned = cleaned.substring(0, cleaned.length - 5).trim();
+    } else {
+      cleaned = cleaned.substring(0, cleaned.length - 4).trim();
+    }
+  }
+
+  if (!cleaned) {
+    cleaned = 'presentacion';
+  }
+
+  return `${cleaned}.pptx`;
+}
+
 /**
  * Sanitizes and normalizes user-provided DOCX filenames:
  * - Strips illegal filesystem characters (\ / : * ? " < > | \0)

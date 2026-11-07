@@ -12,7 +12,7 @@ import {
 
 interface RelatedToolsSectionProps {
   onOpenTools: () => void;
-  currentTool?: 'word-to-pdf' | 'pdf-to-word' | 'jpg-to-pdf' | 'pdf-to-jpg' | 'comprimir-pdf';
+  currentTool?: 'word-to-pdf' | 'pdf-to-word' | 'jpg-to-pdf' | 'pdf-to-jpg' | 'comprimir-pdf' | 'pdf-to-ppt';
 }
 
 export default function RelatedToolsSection({
@@ -24,8 +24,15 @@ export default function RelatedToolsSection({
   const isJpgActive = currentTool === 'jpg-to-pdf';
   const isPdfToJpgActive = currentTool === 'pdf-to-jpg';
   const isCompressPdfActive = currentTool === 'comprimir-pdf';
+  const isPdfToPptActive = currentTool === 'pdf-to-ppt';
 
   const tools = [
+    {
+      name: isPdfToPptActive ? 'PDF a Word' : 'PDF a PPT',
+      icon: Presentation,
+      ext: isPdfToPptActive ? 'PDF → DOCX' : 'PDF → PPTX',
+      href: isPdfToPptActive ? '/pdf-a-word' : '/convertir-pdf-a-ppt/',
+    },
     {
       name: isWordActive ? 'PDF a Word' : 'Word a PDF',
       icon: FileText,

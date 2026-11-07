@@ -13,13 +13,14 @@ import {
   Minimize2,
   Lock,
   ArrowRight,
+  Presentation,
 } from 'lucide-react';
 
 interface HeaderProps {
   onOpenTools: () => void;
   onOpenContact: () => void;
   onScrollToConverter: () => void;
-  activeTool?: 'word-to-pdf' | 'pdf-to-word' | 'jpg-to-pdf' | 'pdf-to-jpg' | 'comprimir-pdf';
+  activeTool?: 'word-to-pdf' | 'pdf-to-word' | 'jpg-to-pdf' | 'pdf-to-jpg' | 'comprimir-pdf' | 'pdf-to-ppt';
 }
 
 export default function Header({
@@ -37,6 +38,7 @@ export default function Header({
   const isJpgActive = activeTool === 'jpg-to-pdf';
   const isPdfToJpgActive = activeTool === 'pdf-to-jpg';
   const isCompressPdfActive = activeTool === 'comprimir-pdf';
+  const isPdfToPptActive = activeTool === 'pdf-to-ppt';
 
   const brandTitle = isWordActive
     ? 'Convertir Word a PDF'
@@ -46,9 +48,22 @@ export default function Header({
     ? 'Convertir JPG a PDF'
     : isPdfToJpgActive
     ? 'Convertir PDF a JPG'
+    : isPdfToPptActive
+    ? 'Convertir PDF a PPT'
     : 'Comprimir PDF';
 
-  const brandInitials = isWordActive ? 'WP' : isPdfActive ? 'PW' : isJpgActive ? 'JP' : isPdfToJpgActive ? 'PJ' : 'CP';
+  const brandInitials = isWordActive
+    ? 'WP'
+    : isPdfActive
+    ? 'PW'
+    : isJpgActive
+    ? 'JP'
+    : isPdfToJpgActive
+    ? 'PJ'
+    : isPdfToPptActive
+    ? 'PP'
+    : 'CP';
+
   const brandHref = isWordActive
     ? '/'
     : isPdfActive
@@ -57,6 +72,8 @@ export default function Header({
     ? '/convertir-jpg-a-pdf/'
     : isPdfToJpgActive
     ? '/convertir-pdf-a-jpg/'
+    : isPdfToPptActive
+    ? '/convertir-pdf-a-ppt/'
     : '/comprimir-pdf/';
 
   // Close dropdown on click outside
@@ -154,6 +171,14 @@ export default function Header({
                   >
                     <ImageIcon className="w-4 h-4 text-purple-600" />
                     <span>PDF a JPG</span>
+                  </Link>
+                  <Link
+                    href="/convertir-pdf-a-ppt/"
+                    onClick={() => setToolsDropdownOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600"
+                  >
+                    <Presentation className="w-4 h-4 text-amber-600" />
+                    <span>PDF a PowerPoint</span>
                   </Link>
 
                   <div className="my-1.5 border-t border-slate-100" />
@@ -253,6 +278,23 @@ export default function Header({
               </Link>
             )}
 
+            {/* PDF to PPT Link */}
+            {isPdfToPptActive ? (
+              <button
+                onClick={onScrollToConverter}
+                className="px-2.5 py-1 text-xs font-semibold text-blue-600 bg-blue-50/70 border border-blue-200/50 rounded-md transition-colors"
+              >
+                PDF a PPT
+              </button>
+            ) : (
+              <Link
+                href="/convertir-pdf-a-ppt/"
+                className="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors"
+              >
+                PDF a PPT
+              </Link>
+            )}
+
             {/* Comprimir PDF Link */}
             {isCompressPdfActive ? (
               <button
@@ -339,6 +381,15 @@ export default function Header({
             }`}
           >
             Convertir PDF a JPG
+          </Link>
+          <Link
+            href="/convertir-pdf-a-ppt/"
+            onClick={() => setMobileMenuOpen(false)}
+            className={`block w-full text-left px-3 py-1.5 text-xs font-medium rounded-md ${
+              isPdfToPptActive ? 'text-blue-600 bg-blue-50/70 font-semibold' : 'text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            Convertir PDF a PPT
           </Link>
           <Link
             href="/comprimir-pdf/"
