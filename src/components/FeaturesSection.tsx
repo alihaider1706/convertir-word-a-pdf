@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Zap,
   Files,
-  CheckCircle,
+  CheckCircle2,
   FileSpreadsheet,
   MonitorSmartphone,
   ShieldCheck,
@@ -11,69 +11,73 @@ import {
 export default function FeaturesSection() {
   const features = [
     {
-      title: 'Conversión rápida de Word a PDF',
+      title: 'Conversión de alta velocidad',
       description:
-        'Transforma tus documentos en segundos gracias a un motor de renderizado optimizado para alta velocidad.',
+        'Transforma tus documentos en segundos con un motor optimizado sin colas de espera ni lentitud.',
       icon: Zap,
     },
     {
-      title: 'Compatibilidad con archivos DOC y DOCX',
+      title: 'Compatibilidad DOC & DOCX',
       description:
-        'Soporta documentos creados en cualquier versión de Word, desde DOC tradicional hasta DOCX moderno.',
+        'Soporta archivos generados por Microsoft Word, Office 365, LibreOffice y Google Docs sin errores de lectura.',
       icon: Files,
     },
     {
-      title: 'Conservación del formato original',
+      title: 'Conservación fiel del diseño',
       description:
-        'Mantiene las fuentes tipográficas, sangrías, párrafos, encabezados y saltos de página con total fidelidad.',
-      icon: CheckCircle,
+        'Respeta con exactitud fuentes tipográficas, márgenes, sangrías, encabezados y saltos de página originales.',
+      icon: CheckCircle2,
     },
     {
-      title: 'Conversión de tablas e imágenes',
+      title: 'Tablas, gráficos e imágenes',
       description:
-        'Procesa tablas estructuradas, bordes e imágenes integradas con resolución vectorial nítida.',
+        'Procesa tablas complejas, fondos y fotografías incrustadas preservando la nitidez vectorial y sin pixelar.',
       icon: FileSpreadsheet,
     },
     {
-      title: 'Compatible con móviles y ordenadores',
+      title: 'Funciona en cualquier dispositivo',
       description:
-        'Accede sin restricciones desde iPhone, Android, tablets, Windows, Mac o Linux directamente desde el navegador.',
+        'Acceso directo desde tu navegador en iOS, Android, macOS, Windows o Linux sin instalar software pesado.',
       icon: MonitorSmartphone,
     },
     {
-      title: 'Protección de archivos y privacidad',
+      title: 'Privacidad y borrado irreversible',
       description:
-        'Tus archivos se transfieren de forma cifrada y se eliminan automáticamente del servidor transcurrida 1 hora.',
+        'Conexión segura SSL/TLS de 256 bits. Los documentos se destruyen permanentemente del servidor tras 1 hora.',
       icon: ShieldCheck,
     },
   ];
 
   return (
-    <section className="py-12 px-4 max-w-4xl mx-auto border-t border-slate-200/70">
-      {/* Section Heading */}
-      <div className="max-w-2xl mb-8 text-left">
-        <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-          Convierte documentos Word a PDF fácilmente
+    <section className="py-14 sm:py-20 px-4 sm:px-6 max-w-5xl mx-auto border-t border-zinc-200/80">
+      <div className="max-w-2xl mb-12 sm:mb-14 text-left">
+        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full border border-zinc-200/60">
+          Características Premium
+        </span>
+        <h2 className="mt-3 text-2xl sm:text-3xl font-extrabold text-zinc-900 tracking-tight">
+          Diseñado para profesionales exigentes
         </h2>
-        <p className="mt-1.5 text-xs sm:text-sm text-slate-500">
-          Una solución creada para ofrecer máxima fidelidad visual, rapidez y confidencialidad en tus conversiones documentales.
+        <p className="mt-2 text-sm sm:text-base text-zinc-600 leading-relaxed">
+          Una suite que prioriza la fidelidad visual, la velocidad de procesamiento y la seguridad de tu información.
         </p>
       </div>
 
-      {/* Balanced 2-Column Editorial Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {features.map((feature, idx) => {
           const Icon = feature.icon;
           return (
-            <div key={idx} className="flex items-start space-x-3.5">
-              <div className="w-9 h-9 rounded-md bg-slate-100 text-blue-600 flex items-center justify-center shrink-0 border border-slate-200/80">
-                <Icon className="w-4 h-4 stroke-[2]" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold text-slate-900 leading-snug">
+            <div
+              key={idx}
+              className="bg-white rounded-2xl border border-zinc-200/90 p-6 shadow-2xs hover:border-zinc-300 hover:shadow-xs transition-all flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-zinc-100 border border-zinc-200/70 flex items-center justify-center text-zinc-900 mb-4">
+                  <Icon className="w-5 h-5 stroke-[1.75]" />
+                </div>
+                <h3 className="text-base font-bold text-zinc-900 mb-1.5">
                   {feature.title}
                 </h3>
-                <p className="mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed">
                   {feature.description}
                 </p>
               </div>

@@ -1,0 +1,59 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                    String             @id @default(cuid())
+  name                  String?
+  email                 String             @unique
+  emailVerified         DateTime?
+  passwordHash          String?
+  image                 String?
+  role                  String             @default("USER") // USER, ADMIN
+  
+  // Stripe Subscriptions
+  stripeCustomerId       String?            @unique
+  stripeSubscriptionId   String?            @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+  planType              String             @default("FREE") // FREE, PRO_MONTHLY, PRO_YEARLY
+  
+  // Relations
+  conversions           ConversionRecord[]
+  dailyUsages           DailyUsage[]
+  
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+}
+
+model DailyUsage {
+  id              String   @id @default(cuid())
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddress       String?  // Tracks guest conversion limits by IP
+  date            String   // Format: "YYYY-MM-DD"
+  count           Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@unique([ipAddress, date])
+}
+
+model ConversionRecord {
+  id              String   @id @default(cuid())
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  fileName        String
+  fileSize        Int
+  conversionType  String   // "word-to-pdf", "compress", "protect", "batch"
+  status          String   @default("COMPLETED")
+  
+  createdAt       DateTime @default(now())
+}

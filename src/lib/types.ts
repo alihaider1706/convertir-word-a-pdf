@@ -195,4 +195,3 @@ export interface PdfToPptBatchFileItem {
   selectedPages?: number[];
   isLoadingThumbnails?: boolean;
 }
-

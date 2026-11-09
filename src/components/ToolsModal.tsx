@@ -180,35 +180,25 @@ export default function ToolsModal({
     {
       id: 'excel-to-pdf',
       name: 'Excel a PDF',
-      description: 'Convierte hojas de cálculo XLSX a tablas PDF perfectamente ajustadas.',
+      description: 'Exporta hojas de cálculo XLS y XLSX a formato PDF estructurado.',
       icon: FileSpreadsheet,
       category: 'to-pdf',
       isCurrent: false,
-      badge: 'Disponible',
-    },
-    {
-      id: 'powerpoint-to-pdf',
-      name: 'PowerPoint a PDF',
-      description: 'Convierte diapositivas PPTX a documentos PDF de alta fidelidad.',
-      icon: Presentation,
-      category: 'to-pdf',
-      isCurrent: false,
-      badge: 'Disponible',
+      badge: 'Próximamente',
     },
   ];
 
   const filteredTools = allTools.filter((tool) => {
-    const matchesCategory =
-      activeCategory === 'all' || tool.category === activeCategory;
     const matchesSearch =
-      searchQuery.trim() === '' ||
       tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tool.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    const matchesCategory =
+      activeCategory === 'all' || tool.category === activeCategory;
+    return matchesSearch && matchesCategory;
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div
         className="bg-white rounded-xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[88vh]"
         role="dialog"

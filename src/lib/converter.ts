@@ -1,12 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import crypto from 'crypto';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { PDFDocument, degrees, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, degrees } from 'pdf-lib';
 import JSZip from 'jszip';
-import { PageSettings, PageOperationRequest, CompressResult, CompressOptions, ProtectResult } from './types';
+import { PageSettings, PageOperationRequest, CompressResult, ProtectResult } from './types';
 import { sanitizePdfFilename } from './formatters';
 
 const execFileAsync = promisify(execFile);
@@ -378,14 +377,18 @@ export async function wordBufferToHtml(buffer: Buffer, originalFilename: string)
 }
 
 /**
- * Converts formatted HTML to PDF using headless Chrome / Edge if available on system
+ * Converts formatted HTML to high-quality PDF using Microsoft Edge / Chrome headless
  */
-async function htmlToPdfWithBrowser(
-  browserPath: string,
+export async function htmlToPdf(
   html: string,
   title: string,
-  settings: PageSettings
+  settings: PageSettings = { pageSize: 'A4', orientation: 'portrait' }
 ): Promise<{ pdfBuffer: Buffer; pageCount: number }> {
+  const browserPath = findBrowserExecutable();
+  if (!browserPath) {
+    throw new Error('No se encontró un motor de renderizado compatible (Microsoft Edge o Google Chrome).');
+  }
+
   const tempDir = os.tmpdir();
   const timestamp = Date.now();
   const randomStr = Math.random().toString(36).substring(2, 9);
@@ -412,6 +415,7 @@ async function htmlToPdfWithBrowser(
 
     const pdfBuffer = await fs.promises.readFile(pdfPath);
 
+    // Read real page count with pdf-lib
     let pageCount = 1;
     try {
       const pdfDoc = await PDFDocument.load(pdfBuffer);
@@ -432,442 +436,80 @@ async function htmlToPdfWithBrowser(
 }
 
 /**
- * Pure Node.js / Serverless PDF renderer using pdf-lib.
- * Does not require Chromium, Chrome, Edge, or external browser binaries.
- * Guaranteed 100% reliable on Vercel, AWS Lambda, Docker, Linux, Windows, and macOS.
+ * Compresses an existing PDF using pypdf
  */
-export async function htmlToPdfPureNode(
-  html: string,
-  title: string,
-  settings: PageSettings = { pageSize: 'A4', orientation: 'portrait' }
-): Promise<{ pdfBuffer: Buffer; pageCount: number }> {
-  const pdfDoc = await PDFDocument.create();
-  const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-
-  const isLandscape = settings.orientation === 'landscape';
-  let pageWidth = settings.pageSize === 'Letter' ? 612 : 595.28;
-  let pageHeight = settings.pageSize === 'Letter' ? 792 : 841.89;
-
-  if (isLandscape) {
-    const temp = pageWidth;
-    pageWidth = pageHeight;
-    pageHeight = temp;
-  }
-
-  const marginX = 54;
-  const marginTop = 54;
-  const marginBottom = 54;
-  const contentWidth = pageWidth - marginX * 2;
-
-  let currentPage = pdfDoc.addPage([pageWidth, pageHeight]);
-  let currentY = pageHeight - marginTop;
-
-  function checkPageBreak(neededHeight: number) {
-    if (currentY - neededHeight < marginBottom) {
-      currentPage = pdfDoc.addPage([pageWidth, pageHeight]);
-      currentY = pageHeight - marginTop;
-      return true;
-    }
-    return false;
-  }
-
-  function wrapText(text: string, font: any, size: number, maxWidth: number): string[] {
-    const words = text.split(/\s+/);
-    const lines: string[] = [];
-    let currentLine = '';
-
-    for (const word of words) {
-      if (!word) continue;
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
-      try {
-        const testWidth = font.widthOfTextAtSize(testLine, size);
-        if (testWidth <= maxWidth) {
-          currentLine = testLine;
-        } else {
-          if (currentLine) lines.push(currentLine);
-          currentLine = word;
-        }
-      } catch (e) {
-        currentLine = testLine;
-      }
-    }
-    if (currentLine) lines.push(currentLine);
-    return lines;
-  }
-
-  const cleanHtml = html
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#039;/gi, "'");
-
-  interface ParsedBlock {
-    type: string;
-    text?: string;
-    mime?: string;
-    base64?: string;
-  }
-
-  const rawBlocks: ParsedBlock[] = [];
-  const tagRegex = /<(\/?)(h[1-6]|p|li|table|tr|td|th|img|hr)([^>]*)>|([^<]+)/gi;
-  let currentTag = 'p';
-  let tagMatch: RegExpExecArray | null;
-
-  while ((tagMatch = tagRegex.exec(cleanHtml)) !== null) {
-    const [, isClose, tagName, attrs, text] = tagMatch;
-    if (text) {
-      const trimmed = text.trim();
-      if (trimmed) {
-        rawBlocks.push({ type: currentTag, text: trimmed });
-      }
-    } else if (tagName) {
-      if (!isClose) {
-        currentTag = tagName.toLowerCase();
-        if (currentTag === 'img') {
-          const srcMatch = attrs.match(/src="data:image\/(png|jpeg|jpg);base64,([^"]+)"/i);
-          if (srcMatch) {
-            rawBlocks.push({ type: 'img', mime: srcMatch[1].toLowerCase(), base64: srcMatch[2] });
-          }
-        } else if (currentTag === 'hr') {
-          rawBlocks.push({ type: 'hr' });
-        }
-      } else {
-        currentTag = 'p';
-      }
-    }
-  }
-
-  if (rawBlocks.length === 0) {
-    const plainLines = cleanHtml.replace(/<[^>]+>/g, '').split(/\r?\n/).filter((l) => l.trim());
-    plainLines.forEach((line) => rawBlocks.push({ type: 'p', text: line.trim() }));
-  }
-
-  for (const block of rawBlocks) {
-    if (block.type === 'hr') {
-      checkPageBreak(20);
-      currentY -= 10;
-      currentPage.drawLine({
-        start: { x: marginX, y: currentY },
-        end: { x: pageWidth - marginX, y: currentY },
-        thickness: 0.75,
-        color: rgb(0.85, 0.88, 0.92),
-      });
-      currentY -= 10;
-      continue;
-    }
-
-    if (block.type === 'img' && block.base64) {
-      try {
-        const imgBuffer = Buffer.from(block.base64, 'base64');
-        const embeddedImg =
-          block.mime === 'png'
-            ? await pdfDoc.embedPng(imgBuffer)
-            : await pdfDoc.embedJpg(imgBuffer);
-
-        const imgDim = embeddedImg.scale(1.0);
-        let scale = 1.0;
-        if (imgDim.width > contentWidth) {
-          scale = contentWidth / imgDim.width;
-        }
-        const imgW = imgDim.width * scale;
-        const imgH = Math.min(imgDim.height * scale, pageHeight - marginTop - marginBottom);
-
-        checkPageBreak(imgH + 16);
-        currentY -= imgH;
-        currentPage.drawImage(embeddedImg, {
-          x: marginX + (contentWidth - imgW) / 2,
-          y: currentY,
-          width: imgW,
-          height: imgH,
-        });
-        currentY -= 12;
-      } catch (imgErr) {
-        console.warn('Failed to embed image in pdf-lib:', imgErr);
-      }
-      continue;
-    }
-
-    if (!block.text) continue;
-
-    let fontSize = 10.5;
-    let lineHeight = 15;
-    let font = fontRegular;
-    let textColor = rgb(0.12, 0.16, 0.22);
-    let extraSpacing = 8;
-    let indentX = 0;
-
-    if (block.type === 'h1') {
-      fontSize = 18;
-      lineHeight = 22;
-      font = fontBold;
-      textColor = rgb(0.09, 0.12, 0.18);
-      extraSpacing = 14;
-    } else if (block.type === 'h2') {
-      fontSize = 14;
-      lineHeight = 18;
-      font = fontBold;
-      textColor = rgb(0.12, 0.16, 0.22);
-      extraSpacing = 10;
-    } else if (block.type === 'h3') {
-      fontSize = 12;
-      lineHeight = 16;
-      font = fontBold;
-      textColor = rgb(0.15, 0.2, 0.28);
-      extraSpacing = 8;
-    } else if (block.type === 'li') {
-      indentX = 14;
-    }
-
-    const effectiveWidth = contentWidth - indentX;
-    const lines = wrapText(block.text, font, fontSize, effectiveWidth);
-
-    checkPageBreak(lines.length * lineHeight + extraSpacing);
-
-    if (block.type === 'li') {
-      currentPage.drawText('•', {
-        x: marginX,
-        y: currentY - fontSize,
-        size: fontSize,
-        font: fontBold,
-        color: textColor,
-      });
-    }
-
-    for (const line of lines) {
-      checkPageBreak(lineHeight);
-      try {
-        currentPage.drawText(line, {
-          x: marginX + indentX,
-          y: currentY - fontSize,
-          size: fontSize,
-          font,
-          color: textColor,
-        });
-      } catch (drawErr) {
-        const safeText = line.replace(/[^\x00-\xFF]/g, '?');
-        currentPage.drawText(safeText, {
-          x: marginX + indentX,
-          y: currentY - fontSize,
-          size: fontSize,
-          font,
-          color: textColor,
-        });
-      }
-      currentY -= lineHeight;
-    }
-    currentY -= extraSpacing;
-  }
-
-  // Draw Page Numbers at Bottom
-  const totalPages = pdfDoc.getPageCount();
-  for (let i = 0; i < totalPages; i++) {
-    const p = pdfDoc.getPage(i);
-    const pageNumText = `${i + 1} / ${totalPages}`;
-    const pageNumWidth = fontRegular.widthOfTextAtSize(pageNumText, 8.5);
-    p.drawText(pageNumText, {
-      x: (pageWidth - pageNumWidth) / 2,
-      y: marginBottom / 2,
-      size: 8.5,
-      font: fontRegular,
-      color: rgb(0.5, 0.55, 0.62),
-    });
-  }
-
-  const pdfBytes = await pdfDoc.save();
-  return {
-    pdfBuffer: Buffer.from(pdfBytes),
-    pageCount: totalPages,
-  };
-}
-
-/**
- * Converts formatted HTML to high-quality PDF using Microsoft Edge / Chrome headless
- * or seamlessly falls back to pure Node.js (pdf-lib) engine when no browser is available (e.g. Vercel serverless)
- */
-export async function htmlToPdf(
-  html: string,
-  title: string,
-  settings: PageSettings = { pageSize: 'A4', orientation: 'portrait' }
-): Promise<{ pdfBuffer: Buffer; pageCount: number }> {
-  const browserPath = findBrowserExecutable();
-  
-  // If Chrome or Edge is available on host system, use headless browser printing
-  if (browserPath) {
-    try {
-      return await htmlToPdfWithBrowser(browserPath, html, title, settings);
-    } catch (browserErr) {
-      console.warn('Headless browser conversion failed, falling back to pure Node.js engine:', browserErr);
-    }
-  }
-
-  // Serverless Pure Node.js Engine (100% reliable on Vercel / Linux Lambda)
-  return await htmlToPdfPureNode(html, title, settings);
-}
-
-export interface PdfInfoResult {
-  fileSize: number;
-  pageCount: number;
-  isEncrypted: boolean;
-  hasDigitalSignature: boolean;
-  error?: string;
-}
-
-/**
- * Fast inspection of PDF metadata, page count, and encryption
- */
-export async function getPdfInfoFromFile(filePath: string, password?: string): Promise<PdfInfoResult> {
-  const pythonScript = path.join(process.cwd(), 'scripts', 'pdf_tools.py');
-  const args = ['info', filePath];
-  if (password) args.push(password);
-
-  const { stdout } = await execFileAsync('python', [pythonScript, ...args]);
-  const match = stdout.match(/INFO_JSON:(.+)/);
-  if (!match) {
-    throw new Error('Error al inspeccionar el archivo PDF.');
-  }
-  return JSON.parse(match[1]);
-}
-
-/**
- * Compresses an arbitrary PDF file with advanced options
- */
-export async function compressPdfFile(
-  inputPath: string,
-  originalFilename: string,
-  options: CompressOptions
-): Promise<CompressResult> {
-  if (!fs.existsSync(inputPath)) {
-    throw new Error('Archivo de entrada no encontrado.');
-  }
-
-  const tempDir = os.tmpdir();
-  const fileHash = crypto.randomBytes(8).toString('hex');
-  const compressedId = `comp_${fileHash}`;
-  const originalId = `orig_${fileHash}`;
-  const compressedPath = path.join(tempDir, `compressed_${compressedId}.pdf`);
-
-  // Cache original for inline preview / comparison
-  const origStats = fs.statSync(inputPath);
-  registerCachedFile({
-    id: originalId,
-    originalName: originalFilename,
-    pdfName: sanitizePdfFilename(originalFilename),
-    pdfPath: inputPath,
-    originalSize: origStats.size,
-    pdfSize: origStats.size,
-    pageCount: 0,
-    createdAt: Date.now(),
-  });
-
-  const pythonScript = path.join(process.cwd(), 'scripts', 'pdf_tools.py');
-  const optsJson = JSON.stringify(options);
-
-  const { stdout, stderr } = await execFileAsync('python', [
-    pythonScript,
-    'compress_advanced',
-    inputPath,
-    compressedPath,
-    optsJson,
-  ]);
-
-  const match = stdout.match(/RESULT_JSON:(.+)/);
-  if (!match) {
-    if (stdout.includes('FILE_IS_ENCRYPTED') || stderr.includes('ENCRYPTED')) {
-      const err = new Error('PASSWORD_REQUIRED');
-      (err as any).isEncrypted = true;
-      throw err;
-    }
-    if (stdout.includes('INVALID_PASSWORD') || stderr.includes('INVALID_PASSWORD')) {
-      const err = new Error('INVALID_PASSWORD');
-      (err as any).isEncrypted = true;
-      throw err;
-    }
-    throw new Error('No se pudo procesar la compresión del documento.');
-  }
-
-  const resultData = JSON.parse(match[1]);
-  if (resultData.status !== 'SUCCESS') {
-    throw new Error(resultData.error || 'Error en la compresión del PDF.');
-  }
-
-  const originalSize = resultData.originalSize;
-  const compressedSize = resultData.compressedSize;
-  const reductionBytes = resultData.reductionBytes;
-  const reductionPercent = resultData.reductionPercent;
-  const pageCount = resultData.pageCount;
-
-  const baseName = originalFilename.replace(/\.pdf$/i, '');
-  const compressedName = `${baseName}-comprimido.pdf`;
-
-  registerCachedFile({
-    id: compressedId,
-    originalName: originalFilename,
-    pdfName: compressedName,
-    pdfPath: compressedPath,
-    originalSize,
-    pdfSize: compressedSize,
-    pageCount,
-    createdAt: Date.now(),
-  });
-
-  let message = '';
-  if (reductionPercent < 1) {
-    message = 'El documento ya cuenta con un tamaño óptimo. Se mantuvieron las fuentes e imágenes intactas.';
-  } else {
-    message = `Se redujo el tamaño en un ${reductionPercent}% (${(reductionBytes / 1024).toFixed(1)} KB ahorrados).`;
-  }
-
-  return {
-    success: true,
-    fileId: compressedId,
-    originalName: originalFilename,
-    compressedName,
-    originalSize,
-    compressedSize,
-    reductionBytes,
-    reductionPercent,
-    downloadUrl: `/api/download?id=${compressedId}`,
-    previewUrl: `/api/download?id=${compressedId}&inline=true`,
-    originalPreviewUrl: `/api/download?id=${originalId}&inline=true`,
-    pageCount,
-    targetSizeAchieved: resultData.targetSizeAchieved,
-    targetSizeKb: resultData.targetSizeKb,
-    isEncrypted: resultData.isEncrypted,
-    hasDigitalSignature: resultData.hasDigitalSignature,
-    mode: resultData.mode,
-    message,
-  };
-}
-
-/**
- * Compresses an existing cached PDF (backward compatibility for CompressPdfModal)
- */
-export async function compressPdf(
-  fileId: string,
-  levelOrOptions: 'low' | 'medium' | 'high' | CompressOptions = 'medium'
-): Promise<CompressResult> {
+export async function compressPdf(fileId: string, level: 'low' | 'medium' | 'high' = 'medium'): Promise<CompressResult> {
   const cached = getCachedFile(fileId);
   if (!cached || !fs.existsSync(cached.pdfPath)) {
     throw new Error('Archivo no encontrado o expirado.');
   }
 
-  let options: CompressOptions;
-  if (typeof levelOrOptions === 'string') {
-    const modeMap: Record<string, 'basic' | 'recommended' | 'extreme'> = {
-      low: 'basic',
-      medium: 'recommended',
-      high: 'extreme',
-    };
-    options = { mode: modeMap[levelOrOptions] || 'recommended' };
-  } else {
-    options = levelOrOptions;
-  }
+  const tempDir = os.tmpdir();
+  const compressedId = `${cached.id}_comp_${level}`;
+  const compressedPath = path.join(tempDir, `compressed_${compressedId}.pdf`);
 
-  return compressPdfFile(cached.pdfPath, cached.pdfName, options);
+  const pythonScript = path.join(process.cwd(), 'scripts', 'pdf_tools.py');
+
+  try {
+    const { stdout, stderr } = await execFileAsync('python', [
+      pythonScript,
+      'compress',
+      cached.pdfPath,
+      compressedPath,
+      level,
+    ]);
+
+    if (!fs.existsSync(compressedPath)) {
+      throw new Error('No se pudo generar el archivo PDF comprimido.');
+    }
+
+    const originalSize = cached.pdfSize;
+    const compressedSize = fs.statSync(compressedPath).size;
+    const reductionBytes = Math.max(0, originalSize - compressedSize);
+    const reductionPercent = originalSize > 0 ? Math.round((reductionBytes / originalSize) * 100) : 0;
+
+    // Register in cache
+    const pdfBuffer = await fs.promises.readFile(compressedPath);
+    let pageCount = cached.pageCount;
+    try {
+      const doc = await PDFDocument.load(pdfBuffer);
+      pageCount = doc.getPageCount();
+    } catch {}
+
+    const compressedName = cached.pdfName.replace(/\.pdf$/i, '_comprimido.pdf');
+
+    registerCachedFile({
+      id: compressedId,
+      originalName: cached.originalName,
+      pdfName: compressedName,
+      pdfPath: compressedPath,
+      originalSize: cached.originalSize,
+      pdfSize: compressedSize,
+      pageCount,
+      createdAt: Date.now(),
+    });
+
+    let message = '';
+    if (reductionPercent < 1) {
+      message = 'El documento ya se encuentra óptimamente comprimido. Se preservó la legibilidad máxima.';
+    } else {
+      message = `Se redujo el tamaño en un ${reductionPercent}% (${(reductionBytes / 1024).toFixed(1)} KB ahorrados).`;
+    }
+
+    return {
+      success: true,
+      fileId: compressedId,
+      originalSize,
+      compressedSize,
+      reductionBytes,
+      reductionPercent,
+      downloadUrl: `/api/download?id=${compressedId}`,
+      message,
+    };
+  } catch (err: any) {
+    console.error('Error compressing PDF:', err);
+    throw new Error(err.message || 'Error al procesar la compresión del PDF.');
+  }
 }
 
 /**

@@ -147,26 +147,26 @@ export default function PageManagerModal({
   const remainingCount = pageOrder.length - deletedPages.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-zinc-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div
-        className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] shadow-card border border-slate-200/90 flex flex-col overflow-hidden"
+        className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] shadow-2xl border border-zinc-200/90 flex flex-col overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby="page-manager-title"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 bg-slate-50">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-zinc-200/80 bg-zinc-50/70">
           <div>
-            <h3 id="page-manager-title" className="text-sm sm:text-base font-bold text-slate-900">
+            <h3 id="page-manager-title" className="text-base font-extrabold text-zinc-900 tracking-tight">
               Organizar páginas del PDF
             </h3>
-            <p className="text-xs text-slate-500">
-              Gira, reordena o elimina páginas de tu documento antes de descargarlo.
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Gira, reordena o elimina páginas visualmente antes de descargar tu documento.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded hover:bg-slate-200 transition-colors"
+            className="p-1.5 text-zinc-400 hover:text-zinc-900 rounded-lg hover:bg-zinc-100 transition-colors"
             aria-label="Cerrar organizador"
           >
             <X className="w-5 h-5" />
@@ -180,8 +180,8 @@ export default function PageManagerModal({
           </div>
         )}
 
-        {/* Pages Grid */}
-        <div className="flex-1 overflow-y-auto p-5 bg-slate-50/50">
+        {/* Pages Grid (WrongPDF Thumbnail Workspace) */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 bg-zinc-50/40">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {pageOrder.map((pageIdx, position) => {
               const rotation = rotations[pageIdx] || 0;
@@ -190,24 +190,24 @@ export default function PageManagerModal({
               return (
                 <div
                   key={pageIdx}
-                  className={`border rounded-lg p-3 bg-white transition-all flex flex-col justify-between ${
+                  className={`border rounded-xl p-3 bg-white transition-all flex flex-col justify-between shadow-2xs ${
                     isDeleted
                       ? 'opacity-40 border-dashed border-rose-300 bg-rose-50/30'
-                      : 'border-slate-200 shadow-2xs hover:border-blue-400'
+                      : 'border-zinc-200 hover:border-zinc-400 hover:shadow-xs'
                   }`}
                 >
                   {/* Top Bar with Page Number and Delete */}
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                    <span className="text-[11px] font-mono font-bold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200/60">
                       Pág. {pageIdx + 1}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleToggleDelete(pageIdx)}
-                      className={`p-1 rounded text-xs transition-colors ${
+                      className={`p-1 rounded-md text-xs transition-colors ${
                         isDeleted
                           ? 'text-rose-600 bg-rose-100 font-bold'
-                          : 'text-slate-400 hover:text-rose-600 hover:bg-slate-100'
+                          : 'text-zinc-400 hover:text-rose-600 hover:bg-rose-50'
                       }`}
                       title={isDeleted ? 'Restaurar página' : 'Eliminar página'}
                     >
@@ -215,17 +215,17 @@ export default function PageManagerModal({
                     </button>
                   </div>
 
-                  {/* Thumbnail Mock / Canvas Preview representation */}
-                  <div className="h-32 bg-slate-100 border border-slate-200 rounded flex flex-col items-center justify-center p-2 text-center overflow-hidden my-1 relative">
+                  {/* Thumbnail Representation */}
+                  <div className="h-32 bg-zinc-50 border border-zinc-200/80 rounded-lg flex flex-col items-center justify-center p-2 text-center overflow-hidden my-1 relative">
                     <div
-                      className="w-16 h-22 bg-white border border-slate-300 shadow-2xs rounded-xs flex flex-col items-center justify-center transition-transform duration-200"
+                      className="w-16 h-22 bg-white border border-zinc-300 shadow-2xs rounded-sm flex flex-col items-center justify-center transition-transform duration-200"
                       style={{ transform: `rotate(${rotation}deg)` }}
                     >
-                      <span className="text-[10px] font-mono text-slate-400 select-none">
+                      <span className="text-[10px] font-mono text-zinc-400 select-none">
                         #{pageIdx + 1}
                       </span>
                       {rotation > 0 && (
-                        <span className="text-[8px] font-bold text-blue-600">
+                        <span className="text-[9px] font-mono font-bold text-zinc-900 bg-zinc-100 px-1 rounded mt-1">
                           {rotation}°
                         </span>
                       )}
@@ -233,7 +233,7 @@ export default function PageManagerModal({
 
                     {isDeleted && (
                       <div className="absolute inset-0 bg-rose-500/20 backdrop-blur-2xs flex items-center justify-center">
-                        <span className="text-xs font-bold text-rose-700 bg-white px-2 py-0.5 rounded shadow-xs">
+                        <span className="text-xs font-bold text-rose-700 bg-white px-2 py-0.5 rounded-md shadow-xs">
                           Eliminada
                         </span>
                       </div>
@@ -242,12 +242,12 @@ export default function PageManagerModal({
 
                   {/* Controls: Rotate & Reorder */}
                   {!isDeleted ? (
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-1">
+                    <div className="flex items-center justify-between pt-2 border-t border-zinc-100 mt-1">
                       <button
                         type="button"
                         onClick={() => handleMoveLeft(position)}
                         disabled={position === 0}
-                        className="p-1 text-slate-500 hover:text-slate-800 disabled:opacity-20"
+                        className="p-1 text-zinc-500 hover:text-zinc-900 disabled:opacity-20"
                         title="Mover a la izquierda"
                       >
                         <ChevronLeft className="w-4 h-4" />
@@ -256,8 +256,8 @@ export default function PageManagerModal({
                       <button
                         type="button"
                         onClick={() => handleRotate(pageIdx)}
-                        className="p-1 text-blue-600 hover:text-blue-800 rounded hover:bg-blue-50 transition-colors"
-                        title="Girar 90° a la derecha"
+                        className="p-1 text-zinc-700 hover:text-black rounded-md hover:bg-zinc-100 transition-colors"
+                        title="Girar 90°"
                       >
                         <RotateCw className="w-3.5 h-3.5" />
                       </button>
@@ -266,7 +266,7 @@ export default function PageManagerModal({
                         type="button"
                         onClick={() => handleMoveRight(position)}
                         disabled={position === pageOrder.length - 1}
-                        className="p-1 text-slate-500 hover:text-slate-800 disabled:opacity-20"
+                        className="p-1 text-zinc-500 hover:text-zinc-900 disabled:opacity-20"
                         title="Mover a la derecha"
                       >
                         <ChevronRight className="w-4 h-4" />
@@ -276,7 +276,7 @@ export default function PageManagerModal({
                     <button
                       type="button"
                       onClick={() => handleToggleDelete(pageIdx)}
-                      className="w-full text-center text-[11px] font-semibold text-rose-600 hover:text-rose-800 pt-2 border-t border-slate-100 mt-1"
+                      className="w-full text-center text-[11px] font-semibold text-rose-600 hover:text-rose-800 pt-2 border-t border-zinc-100 mt-1"
                     >
                       Deshacer eliminación
                     </button>
@@ -288,10 +288,10 @@ export default function PageManagerModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="px-5 py-3 border-t border-slate-200 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-3 text-slate-500">
+        <div className="px-5 sm:px-6 py-3.5 border-t border-zinc-200/80 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3 text-zinc-500 font-medium">
             <span>
-              Páginas activas: <strong className="text-slate-800">{remainingCount}</strong>
+              Páginas activas: <strong className="text-zinc-900">{remainingCount}</strong>
             </span>
             {deletedPages.length > 0 && (
               <span className="text-rose-600">
@@ -301,9 +301,9 @@ export default function PageManagerModal({
             <button
               type="button"
               onClick={handleReset}
-              className="text-slate-500 hover:text-slate-800 underline underline-offset-2 ml-2"
+              className="text-zinc-400 hover:text-zinc-900 underline underline-offset-2 ml-2"
             >
-              Restablecer todo
+              Restablecer orden
             </button>
           </div>
 
@@ -311,7 +311,7 @@ export default function PageManagerModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 font-medium"
+              className="px-4 py-2 border border-zinc-200 rounded-xl text-zinc-700 hover:bg-zinc-100 font-medium transition-colors"
             >
               Cancelar
             </button>
@@ -319,12 +319,12 @@ export default function PageManagerModal({
               type="button"
               onClick={handleSaveAndDownload}
               disabled={isSaving || remainingCount <= 0}
-              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold rounded-md shadow-xs inline-flex items-center gap-1.5 transition-colors"
+              className="px-5 py-2 bg-zinc-900 hover:bg-black disabled:opacity-50 text-white font-semibold rounded-xl shadow-xs inline-flex items-center gap-1.5 transition-all active:scale-95"
             >
               {isSaving ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Procesando PDF...</span>
+                  <span>Guardando...</span>
                 </>
               ) : (
                 <>

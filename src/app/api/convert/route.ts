@@ -5,6 +5,7 @@ import os from 'os';
 import { wordBufferToHtml, htmlToPdf, registerCachedFile, validateWordSignature } from '@/lib/converter';
 import { getPdfFilename, sanitizePdfFilename } from '@/lib/formatters';
 import { PageSettings } from '@/lib/types';
+import { checkAndIncrementUsage } from '@/lib/usage';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -46,15 +47,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Maximum file size: 50MB
-    const MAX_SIZE = 50 * 1024 * 1024;
-    if (file.size > MAX_SIZE) {
+    // Check SaaS daily limits & file size limits for Free vs Pro
+    const usageCheck = await checkAndIncrementUsage(request, file.size);
+    if (!usageCheck.allowed) {
       return NextResponse.json(
         {
           success: false,
-          error: 'El archivo excede el tamaño máximo permitido de 50 MB.',
+          limitReached: true,
+          reason: usageCheck.reason,
+          error: usageCheck.message,
+          maxAllowed: usageCheck.maxAllowed,
+          isPro: usageCheck.isPro,
         },
-        { status: 400 }
+        { status: 403 }
       );
     }
 

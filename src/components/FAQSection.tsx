@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, HelpCircle } from 'lucide-react';
 
 interface FaqItem {
   question: string;
@@ -15,32 +15,32 @@ export default function FAQSection() {
     {
       question: '¿Cómo convertir Word a PDF gratis?',
       answer:
-        'Arrastra tu documento Word (.doc o .docx) al recuadro de carga o haz clic en "Seleccionar archivo". Una vez cargado, pulsa el botón "Convertir a PDF" y en pocos segundos podrás descargar tu documento listo para usar, 100% gratis y sin marcas de agua.',
+        'Arrastra tu documento Word (.doc o .docx) a la zona de carga o pulsa en "Seleccionar archivos". Una vez cargado, haz clic en "Convertir a PDF" y en pocos segundos podrás descargar tu archivo de forma gratuita, sin marcas de agua y sin límites.',
     },
     {
       question: '¿Puedo convertir archivos DOCX a PDF?',
       answer:
-        'Sí. La herramienta es totalmente compatible con el formato estándar DOCX de Microsoft Word, así como con archivos DOC de versiones anteriores y documentos generados por Google Docs o LibreOffice.',
+        'Sí. La plataforma soporta el formato DOCX estándar de Microsoft Word, así como documentos DOC anteriores y archivos creados en Google Docs o LibreOffice Writer.',
     },
     {
-      question: '¿Se conserva el formato original?',
+      question: '¿Se mantiene el formato original del documento?',
       answer:
-        'Sí. El motor de conversión preserva la estructura del documento: familias tipográficas, tamaños de texto, alineaciones, listas con viñetas, tablas con bordes y proporciones de imágenes incrustadas.',
+        'Sí. El motor de renderizado preserva fielmente fuentes tipográficas, saltos de página, imágenes integradas, márgenes y tablas estructuradas.',
     },
     {
       question: '¿Puedo convertir documentos desde mi móvil?',
       answer:
-        'Sí. El sitio está optimizado para funcionar directamente en el navegador de cualquier teléfono o tableta (iOS y Android), permitiéndote cargar documentos desde tus archivos locales o servicios en la nube.',
+        'Por supuesto. La herramienta funciona fluidamente en navegadores de iOS (Safari, Chrome) y Android sin requerir la descarga de ninguna app externa.',
     },
     {
-      question: '¿Existe un límite de tamaño para los archivos?',
+      question: '¿Hay un límite de peso por archivo?',
       answer:
-        'El tamaño máximo permitido es de 50 MB por archivo, lo que cubre con holgura la gran mayoría de informes, tesis, presentaciones y contratos habituales.',
+        'El tamaño máximo por documento es de 50 MB, suficiente para tesis completas, informes corporativos con fotos y documentos extensos.',
     },
     {
-      question: '¿Qué sucede con mis documentos después de convertirlos?',
+      question: '¿Qué ocurre con mis documentos una vez finalizado el proceso?',
       answer:
-        'La privacidad y seguridad están garantizadas. Todas las conexiones se realizan bajo cifrado SSL y los archivos procesados se eliminan de manera automática e irreversible de nuestros servidores tras 1 hora.',
+        'Toda la conexión cuenta con cifrado SSL de extremo a extremo. Los archivos procesados son eliminados de forma automática y definitiva del servidor transcurrida 1 hora.',
     },
   ];
 
@@ -49,41 +49,45 @@ export default function FAQSection() {
   };
 
   return (
-    <section id="faq-section" className="py-12 px-4 max-w-4xl mx-auto border-t border-slate-200/70">
-      <div className="mb-6 text-left">
-        <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+    <section id="faq-section" className="py-14 sm:py-20 px-4 sm:px-6 max-w-4xl mx-auto border-t border-zinc-200/80">
+      <div className="mb-10 text-left">
+        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full border border-zinc-200/60">
+          Dudas resueltas
+        </span>
+        <h2 className="mt-3 text-2xl sm:text-3xl font-extrabold text-zinc-900 tracking-tight">
           Preguntas frecuentes
         </h2>
-        <p className="mt-1 text-xs sm:text-sm text-slate-500">
-          Respuestas a las consultas más habituales sobre la conversión de Word a PDF.
+        <p className="mt-1.5 text-sm text-zinc-600">
+          Todo lo que necesitas saber sobre el funcionamiento de la herramienta.
         </p>
       </div>
 
-      <div className="divide-y divide-slate-200 border-y border-slate-200">
+      <div className="space-y-3">
         {faqs.map((faq, idx) => {
           const isOpen = openIndex === idx;
           return (
-            <div key={idx} className="py-4">
+            <div
+              key={idx}
+              className="bg-white rounded-2xl border border-zinc-200/90 overflow-hidden shadow-2xs transition-all"
+            >
               <button
                 type="button"
                 onClick={() => toggle(idx)}
-                className="w-full text-left flex items-center justify-between gap-4 py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
+                className="w-full px-5 sm:px-6 py-4 sm:py-5 text-left flex items-center justify-between gap-4 font-semibold text-zinc-900 text-sm sm:text-base hover:text-black transition-colors"
                 aria-expanded={isOpen}
               >
-                <span className="text-sm sm:text-base font-semibold text-slate-900 pr-2">
-                  {faq.question}
-                </span>
-                <span
-                  className={`w-6 h-6 flex items-center justify-center shrink-0 text-slate-500 transition-transform duration-200 ${
-                    isOpen ? 'rotate-180 text-blue-600' : ''
+                <span>{faq.question}</span>
+                <div
+                  className={`w-7 h-7 rounded-lg bg-zinc-100 flex items-center justify-center shrink-0 transition-transform duration-200 ${
+                    isOpen ? 'rotate-180 bg-zinc-900 text-white' : 'text-zinc-600'
                   }`}
                 >
                   <ChevronDown className="w-4 h-4" />
-                </span>
+                </div>
               </button>
 
               {isOpen && (
-                <div className="pt-2.5 pb-1 text-xs sm:text-sm text-slate-600 leading-relaxed pr-6">
+                <div className="px-5 sm:px-6 pb-5 pt-1 text-xs sm:text-sm text-zinc-600 leading-relaxed border-t border-zinc-100 animate-in fade-in duration-150">
                   {faq.answer}
                 </div>
               )}

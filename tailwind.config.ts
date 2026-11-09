@@ -22,10 +22,6 @@ const config: Config = {
           900: "#1e3a8a",
           950: "#172554",
         },
-        slate: {
-          850: "#172033",
-          950: "#090d16",
-        },
         word: {
           DEFAULT: "#2b579a",
           dark: "#1e3e6d",
@@ -48,11 +44,6 @@ const config: Config = {
           "Arial",
           "sans-serif",
         ],
-      },
-      boxShadow: {
-        "2xs": "0 1px 2px 0 rgba(0, 0, 0, 0.04)",
-        "xs": "0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.03)",
-        "card": "0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04)",
       },
     },
   },

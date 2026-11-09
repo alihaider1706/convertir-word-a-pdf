@@ -86,6 +86,9 @@ declare module 'lucide-react' {
   export const Settings2: any;
   export const AlertTriangle: any;
   export const Unlock: any;
+  export const CreditCard: any;
+  export const FileArchive: any;
+  export const LogOut: any;
 }
 
 declare module 'mammoth' {
@@ -98,6 +101,12 @@ declare module 'word-extractor' {
   const WordExtractor: any;
   export default WordExtractor;
   export = WordExtractor;
+}
+
+declare module 'pdf-parse' {
+  const pdfParse: any;
+  export default pdfParse;
+  export = pdfParse;
 }
 
 declare module 'pdfjs-dist' {
